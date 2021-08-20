@@ -9,9 +9,10 @@ import { Server } from "socket.io";
 import { createTypeormConn } from "#root/conn/dbTypeOrm";
 import socket from "#root/conn/socket";
 
-import { environmentVariables } from "#root/utils/env";
 import swaggerDocument from "#root/swagger.json";
+import { environmentVariables } from "#root/utils/env";
 import { log } from "#root/utils/logger";
+import { errorHandler, notFound } from "#root/middleware/errorMiddleware";
 
 const PORT = environmentVariables.PORT || 4000;
 const COOKIE_SECRET = environmentVariables.COOKIE_SECRET || "cookie_secret";
@@ -45,6 +46,9 @@ export async function startServer() {
 		app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 		app.get("/", (_, res) => res.send("<h2>Hello World</h2>"));
+
+		app.use(notFound);
+		app.use(errorHandler);
 
 		httpServer.listen(PORT, "localhost", () => {
 			log.info(`🚀 Server is listening on port ${PORT} 🚀`);
