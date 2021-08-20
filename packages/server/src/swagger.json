@@ -54,9 +54,8 @@
 									"lastName": {
 										"type": "string"
 									},
-									"email": {
-										"type": "string",
-										"format": "email"
+									"username": {
+										"type": "string"
 									},
 									"password": {
 										"type": "string"
@@ -98,9 +97,8 @@
 							"schema": {
 								"type": "object",
 								"properties": {
-									"email": {
-										"type": "string",
-										"format": "email"
+									"username": {
+										"type": "string"
 									},
 									"password": {
 										"type": "string"
@@ -228,7 +226,18 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/UserForApplication"
+								"type": "object",
+								"properties": {
+									"firstName": {
+										"type": "string"
+									},
+									"lastName": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
 							}
 						}
 					},
@@ -346,62 +355,6 @@
 					}
 				}
 			},
-			"SortDirection": {
-				"type": "string",
-				"enum": ["ASC", "DESC"]
-			},
-			"AdminGetAllUsersFromDB": {
-				"type": "object",
-				"properties": {
-					"prev": {
-						"type": "boolean",
-						"default": false
-					},
-					"next": {
-						"type": "boolean",
-						"default": false
-					},
-					"total": {
-						"type": "integer"
-					},
-					"users": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/UserFromDB"
-						}
-					}
-				}
-			},
-			"UserFromDB": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "integer"
-					},
-					"firstName": {
-						"type": "string"
-					},
-					"lastName": {
-						"type": "string"
-					},
-					"email": {
-						"type": "string",
-						"format": "email"
-					},
-					"password": {
-						"type": "string"
-					},
-					"isEmailConfirmed": {
-						"type": "boolean"
-					},
-					"isAdmin": {
-						"type": "boolean"
-					},
-					"isActive": {
-						"type": "boolean"
-					}
-				}
-			},
 			"UserForApplication": {
 				"type": "object",
 				"properties": {
@@ -414,15 +367,8 @@
 					"lastName": {
 						"type": "string"
 					},
-					"email": {
-						"type": "string",
-						"format": "email"
-					},
-					"isEmailConfirmed": {
-						"type": "boolean"
-					},
-					"isAdmin": {
-						"type": "boolean"
+					"username": {
+						"type": "string"
 					}
 				}
 			},
@@ -439,14 +385,7 @@
 						"type": "string"
 					},
 					"email": {
-						"type": "string",
-						"format": "email"
-					},
-					"isEmailConfirmed": {
-						"type": "boolean"
-					},
-					"isAdmin": {
-						"type": "boolean"
+						"type": "string"
 					},
 					"token": {
 						"type": "string"

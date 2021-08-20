@@ -9,6 +9,8 @@ import { Server } from "socket.io";
 import { createTypeormConn } from "#root/conn/dbTypeOrm";
 import socket from "#root/conn/socket";
 
+import { userRouter } from "./routes/userRoutes";
+
 import swaggerDocument from "#root/swagger.json";
 import { environmentVariables } from "#root/utils/env";
 import { log } from "#root/utils/logger";
@@ -45,7 +47,7 @@ export async function startServer() {
 		});
 		app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
-		app.get("/", (_, res) => res.send("<h2>Hello World</h2>"));
+		app.use("/api/users", userRouter);
 
 		app.use(notFound);
 		app.use(errorHandler);
