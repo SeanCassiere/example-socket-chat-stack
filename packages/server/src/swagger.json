@@ -1,8 +1,8 @@
 {
 	"openapi": "3.0.0",
 	"info": {
-		"title": "typeorm-rest-example",
-		"description": "This is a example REST API using TypeORM.",
+		"title": "socket-chat-example",
+		"description": "This is an example Chat service with Web Sockets.",
 		"termsOfService": "http://swagger.io/terms/",
 		"contact": {
 			"email": "apiteam@swagger.io"
@@ -28,14 +28,6 @@
 		{
 			"name": "Users",
 			"description": "All User related methods",
-			"externalDocs": {
-				"description": "Find out more",
-				"url": "http://swagger.io"
-			}
-		},
-		{
-			"name": "Admin",
-			"description": "All methods that are only accessible to isAdmin users",
 			"externalDocs": {
 				"description": "Find out more",
 				"url": "http://swagger.io"
