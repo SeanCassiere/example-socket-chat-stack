@@ -1,13 +1,17 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import "#root/App.css";
+
+import { Container } from "react-bootstrap";
+
 import Routes from "./routes/Routes";
 
 const App = () => {
 	return (
-		<div className='App'>
+		<Container className='h-100' fluid>
 			<Routes />
-		</div>
+		</Container>
 	);
 };
 
