@@ -1,0 +1,25 @@
+{
+	"name": "seanc-sockets-stack",
+	"version": "1.0.0",
+	"description": "",
+	"private": true,
+	"main": "index.js",
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"build:common": "npm run build --prefix packages/common",
+		"build:server": "npm run build --prefix packages/server",
+		"build:web": "npm run build --prefix packages/web",
+		"build": "npm run build:common && npm run build:server && npm run build:web",
+		"web": "npm start --prefix packages/web",
+		"server": "npm run dev --prefix packages/server",
+		"dev": "concurrently \"npm run server\" \"npm run web\""
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"concurrently": "^6.2.1"
+	}
+}

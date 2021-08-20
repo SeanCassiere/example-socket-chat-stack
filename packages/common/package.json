@@ -1,0 +1,27 @@
+{
+	"name": "@seanc-sockets-stack/common",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"scripts": {
+		"start": "NODE_ENV=production node dist/index.js",
+		"build:killDist": "rimraf ./dist",
+		"build:code": "etsc && tsc-alias",
+		"build:declarations": "tsc --emitDeclarationOnly",
+		"build": "npm run build:killDist && npm run build:code && npm run build:declarations",
+		"dev": "ts-node-dev --respawn -r tsconfig-paths/register src/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^16.6.2",
+		"esbuild": "^0.12.21",
+		"esbuild-node-tsc": "^1.6.1",
+		"rimraf": "^3.0.2",
+		"ts-node-dev": "^1.1.8",
+		"tsc-alias": "^1.3.9",
+		"tsconfig-paths": "^3.10.1",
+		"typescript": "^4.3.5"
+	}
+}
