@@ -15,6 +15,6 @@
 		"database": "socket-chat-example",
 		"synchronize": true,
 		"logging": true,
-		"entities": ["src/entities/*.*"]
+		"entities": ["./src/entities/*.*"]
 	}
 ]
