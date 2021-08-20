@@ -1,10 +1,30 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Button, Form, Container, FloatingLabel, Row, Col } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+
+import { AppDispatch } from "#root/shared/redux/store";
+import { demoSetUserLoggedIn } from "#root/shared/redux/slices/authUser";
+import { useHistory } from "react-router-dom";
 
 export const LoginScreen = () => {
-	function handleSubmit(e: React.SyntheticEvent) {
-		e.preventDefault();
-	}
+	const dispatch = useDispatch<AppDispatch>();
+	const history = useHistory();
+
+	const handleSubmit = useCallback(
+		(e: React.SyntheticEvent) => {
+			e.preventDefault();
+			dispatch(demoSetUserLoggedIn());
+			const {
+				location: { state },
+			} = history;
+			const routeState = state as any;
+
+			if (routeState && routeState.next) return history.push(routeState.next);
+
+			history.push("/dashboard");
+		},
+		[dispatch, history]
+	);
 
 	return (
 		<Container className='mt-5'>

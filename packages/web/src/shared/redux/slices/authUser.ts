@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface AuthUserSliceState {
 	token: string | null;
@@ -28,13 +28,19 @@ export const authUserSlice = createSlice({
 	name: "authUser",
 	initialState: initialStateData,
 	reducers: {
-		demoSetUserLoggedIn: (
-			state,
-			action: PayloadAction<{ token: string; username: string; firstName: string; lastName: string }>
-		) => {
-			state.user.username = action.payload.username;
-			state.user.firstName = action.payload.firstName;
-			state.user.lastName = action.payload.lastName;
+		demoSetUserLoggedIn: (state) => {
+			state.token = "token";
+			state.isLoggedIn = true;
+			state.user.username = "JohnDoeName";
+			state.user.firstName = "John";
+			state.user.lastName = "Doe";
+		},
+		demoSetUserLoggedOut: (state) => {
+			state.token = null;
+			state.isLoggedIn = false;
+			state.user.username = null;
+			state.user.firstName = null;
+			state.user.lastName = null;
 		},
 	},
 });
