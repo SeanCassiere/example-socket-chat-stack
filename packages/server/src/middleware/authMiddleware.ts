@@ -6,6 +6,7 @@ import { GeneratedTokenInterface } from "#root/interfaces/jwtTokenInterfaces";
 import { CustomRequest } from "#root/interfaces/expressInterfaces";
 import { User } from "#root/entities/User";
 import { environmentVariables } from "#root/utils/env";
+import { refreshTokenCookieConst } from "#root/utils/constants/cookieConstants";
 
 const JWT_SECRET: Secret = environmentVariables.JWT_SECRET || "dev_jwt_secret";
 const REFRESH_JWT_SECRET: Secret = environmentVariables.REFRESH_JWT_SECRET || "dev_refresh_jwt_secret";
@@ -41,8 +42,8 @@ export const protect = asyncHandler(async (req: CustomRequest<{}>, res, next: Ne
 });
 
 export const isRefreshCookieValid = asyncHandler(async (req: CustomRequest<{}>, res: Response, next: NextFunction) => {
-	if (req.signedCookies && req.signedCookies.refreshToken) {
-		const token = req.signedCookies.refreshToken;
+	if (req.signedCookies && req.signedCookies[refreshTokenCookieConst]) {
+		const token = req.signedCookies[refreshTokenCookieConst];
 		try {
 			const decoded = verify(token, REFRESH_JWT_SECRET) as GeneratedTokenInterface;
 
