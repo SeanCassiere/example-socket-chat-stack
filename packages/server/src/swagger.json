@@ -1,0 +1,479 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "typeorm-rest-example",
+		"description": "This is a example REST API using TypeORM.",
+		"termsOfService": "http://swagger.io/terms/",
+		"contact": {
+			"email": "apiteam@swagger.io"
+		},
+		"license": {
+			"name": "Apache 2.0",
+			"url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+		},
+		"version": "1.0.0"
+	},
+	"externalDocs": {
+		"description": "Find out more about Swagger",
+		"url": "http://swagger.io"
+	},
+	"servers": [
+		{
+			"url": "http://localhost:4000/api",
+			"description": "Development server",
+			"variables": {}
+		}
+	],
+	"tags": [
+		{
+			"name": "Users",
+			"description": "All User related methods",
+			"externalDocs": {
+				"description": "Find out more",
+				"url": "http://swagger.io"
+			}
+		},
+		{
+			"name": "Admin",
+			"description": "All methods that are only accessible to isAdmin users",
+			"externalDocs": {
+				"description": "Find out more",
+				"url": "http://swagger.io"
+			}
+		}
+	],
+	"paths": {
+		"/users": {
+			"post": {
+				"tags": ["Users"],
+				"summary": "Register a user",
+				"description": "Register a user on the platform.",
+				"operationId": "RegisterUser",
+				"requestBody": {
+					"description": "User object required for registering",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"firstName": {
+										"type": "string"
+									},
+									"lastName": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"201": {
+						"description": "successfully registered user",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserForApplication"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					}
+				},
+				"x-codegen-request-body-name": "body",
+				"parameters": []
+			}
+		},
+		"/users/login": {
+			"post": {
+				"tags": ["Users"],
+				"summary": "Logs user into the system",
+				"operationId": "LoginUser",
+				"requestBody": {
+					"description": "Login a user",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successfully logged in as a user",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserForApplicationWithToken"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/UnauthorizedError"
+					}
+				},
+				"parameters": []
+			}
+		},
+		"/users/logout": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Logout user and clear cookie",
+				"operationId": "LogoutUser",
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"success": {
+											"type": "boolean",
+											"default": true
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"parameters": []
+			}
+		},
+		"/users/refreshToken": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Get new access-token via refresh-token in cookies",
+				"operationId": "RefreshAuth",
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"token": {
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/UnauthorizedError"
+					}
+				},
+				"parameters": []
+			}
+		},
+		"/users/profile": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Fetch the profile of the currently logged-in user",
+				"operationId": "FetchCurrentUserProfile",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully fetch current logged in user's profile",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserForApplication"
+								}
+							}
+						}
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				},
+				"x-codegen-request-body-name": "body",
+				"parameters": []
+			},
+			"put": {
+				"tags": ["Users"],
+				"summary": "Update the profile of the currently logged-in user",
+				"operationId": "UpdateCurrentUserProfile",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"description": "User profile data to be updated",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserForApplication"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successfully updated the currently logged user profile",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserForApplication"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/UnauthorizedError"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				},
+				"x-codegen-request-body-name": "body",
+				"parameters": []
+			}
+		}
+	},
+	"components": {
+		"responses": {
+			"NotFound": {
+				"description": "Not found",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/StandardError"
+						}
+					}
+				}
+			},
+			"UnauthorizedError": {
+				"description": "Access token is missing or invalid",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/StandardError"
+						}
+					}
+				}
+			},
+			"BadRequest": {
+				"description": "The method call failed the server-side validation",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/FieldValidationError"
+						}
+					}
+				}
+			}
+		},
+		"schemas": {
+			"FieldValidationError": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "object",
+						"properties": {
+							"body": {
+								"type": "array",
+								"nullable": true,
+								"items": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string"
+										},
+										"propertyPath": {
+											"type": "string"
+										}
+									}
+								}
+							},
+							"query": {
+								"type": "array",
+								"nullable": true,
+								"items": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string"
+										},
+										"propertyPath": {
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"StandardError": {
+				"type": "object",
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"stack": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"SortDirection": {
+				"type": "string",
+				"enum": ["ASC", "DESC"]
+			},
+			"AdminGetAllUsersFromDB": {
+				"type": "object",
+				"properties": {
+					"prev": {
+						"type": "boolean",
+						"default": false
+					},
+					"next": {
+						"type": "boolean",
+						"default": false
+					},
+					"total": {
+						"type": "integer"
+					},
+					"users": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/UserFromDB"
+						}
+					}
+				}
+			},
+			"UserFromDB": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					},
+					"password": {
+						"type": "string"
+					},
+					"isEmailConfirmed": {
+						"type": "boolean"
+					},
+					"isAdmin": {
+						"type": "boolean"
+					},
+					"isActive": {
+						"type": "boolean"
+					}
+				}
+			},
+			"UserForApplication": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					},
+					"isEmailConfirmed": {
+						"type": "boolean"
+					},
+					"isAdmin": {
+						"type": "boolean"
+					}
+				}
+			},
+			"UserForApplicationWithToken": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					},
+					"isEmailConfirmed": {
+						"type": "boolean"
+					},
+					"isAdmin": {
+						"type": "boolean"
+					},
+					"token": {
+						"type": "string"
+					},
+					"refreshToken": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		},
+		"links": {},
+		"callbacks": {}
+	},
+	"security": []
+}
