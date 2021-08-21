@@ -1,19 +1,30 @@
-import React, { useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form, Container, FloatingLabel, Row, Col } from "react-bootstrap";
-import { useDispatch } from "react-redux";
-
-import { AppDispatch } from "#root/shared/redux/store";
-import { demoSetUserLoggedIn } from "#root/shared/redux/slices/authUser";
+import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
+
+import { AppDispatch, selectAuthUserState } from "#root/shared/redux/store";
+// import { demoSetUserLoggedIn } from "#root/shared/redux/slices/authUser";
+import { userLoginThunk } from "#root/shared/redux/thunks/authUser.thunks";
 
 export const LoginScreen = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const history = useHistory();
+	const { isLoggedIn } = useSelector(selectAuthUserState);
 
-	const handleSubmit = useCallback(
-		(e: React.SyntheticEvent) => {
-			e.preventDefault();
-			dispatch(demoSetUserLoggedIn());
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+
+	useEffect(() => {
+		if (isLoggedIn) return history.push("/dashboard");
+	}, [history, isLoggedIn]);
+
+	const handleSubmit = async (e: React.SyntheticEvent) => {
+		e.preventDefault();
+
+		await dispatch(userLoginThunk({ username, password }));
+
+		if (isLoggedIn) {
 			const {
 				location: { state },
 			} = history;
@@ -21,10 +32,9 @@ export const LoginScreen = () => {
 
 			if (routeState && routeState.next) return history.push(routeState.next);
 
-			history.push("/dashboard");
-		},
-		[dispatch, history]
-	);
+			return history.push("/dashboard");
+		}
+	};
 
 	return (
 		<Container className='mt-5 min-vh-75'>
@@ -38,13 +48,23 @@ export const LoginScreen = () => {
 					<Form onSubmit={handleSubmit}>
 						<Form.Group className='mb-3' controlId='formBasicEmail'>
 							<FloatingLabel controlId='floatingUsername' label='Username' className='mb-3'>
-								<Form.Control type='text' placeholder='Your username' />
+								<Form.Control
+									type='text'
+									placeholder='Your username'
+									value={username}
+									onChange={(e) => setUsername(e.target.value)}
+								/>
 							</FloatingLabel>
 						</Form.Group>
 
 						<Form.Group className='mb-3' controlId='formBasicPassword'>
 							<FloatingLabel controlId='floatingPassword' label='Password' className='mb-3'>
-								<Form.Control type='password' placeholder='Password' />
+								<Form.Control
+									type='password'
+									placeholder='Password'
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+								/>
 							</FloatingLabel>
 						</Form.Group>
 
