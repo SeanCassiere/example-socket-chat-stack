@@ -18,8 +18,8 @@ const ChangePasswordForm = () => {
 			<Row className='justify-content-md-center align-items-md-center'>
 				<Col xs lg='6'>
 					<Form onSubmit={handleSubmit}>
-						<Form.Group className='mb-3' controlId='formBasicFirstName'>
-							<FloatingLabel controlId='floatingFirstName' label='New Password' className='mb-3'>
+						<Form.Group className='mb-3' controlId='floatingNewPassword'>
+							<FloatingLabel controlId='floatingNewPassword' label='New Password' className='mb-3'>
 								<Form.Control
 									type='password'
 									placeholder='New Password'
@@ -30,8 +30,8 @@ const ChangePasswordForm = () => {
 							</FloatingLabel>
 						</Form.Group>
 
-						<Form.Group className='mb-3' controlId='formBasicLastName'>
-							<FloatingLabel controlId='floatingLastName' label='Confirm new password' className='mb-3'>
+						<Form.Group className='mb-3' controlId='floatingConfirmNewPassword'>
+							<FloatingLabel controlId='floatingConfirmNewPassword' label='Confirm new password' className='mb-3'>
 								<Form.Control
 									type='password'
 									placeholder='Confirm new password'
