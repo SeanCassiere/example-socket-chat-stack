@@ -1,19 +1,35 @@
 import React, { useState } from "react";
-import { Button, Col, FloatingLabel, Form, Row } from "react-bootstrap";
-import { useSelector } from "react-redux";
+import { Alert, Button, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
 
-import { selectAuthUserState } from "#root/shared/redux/store";
+import { AppDispatch, selectAuthUserState, selectUpdateProfileProcess } from "#root/shared/redux/store";
+import { updateUserProfileThunk } from "#root/shared/redux/thunks/allProcess/updateProfile.thunk";
 
 const UserDetailsForm = () => {
+	const dispatch = useDispatch<AppDispatch>();
+	const { loading, success, error, errorMsg } = useSelector(selectUpdateProfileProcess);
+
 	const {
 		user: { firstName, lastName, username },
 	} = useSelector(selectAuthUserState);
 
-	const [profileFirstName, setProfileFirstName] = useState(firstName as string);
-	const [profileLastName, setProfileLastName] = useState(lastName as string);
+	const [form, setForm] = useState({
+		firstName: firstName as string,
+		lastName: lastName as string,
+	});
+
+	function handleChange(evt: React.ChangeEvent<HTMLInputElement>) {
+		const value = evt.target.value;
+		setForm({
+			...form,
+			[evt.target.name]: value,
+		});
+	}
 
 	function handleSubmit(e: React.SyntheticEvent) {
 		e.preventDefault();
+
+		dispatch(updateUserProfileThunk(form));
 	}
 
 	return (
@@ -23,6 +39,22 @@ const UserDetailsForm = () => {
 					<h5>Update profile details</h5>
 				</Col>
 			</Row>
+
+			{success && (
+				<Row className='justify-content-md-center align-items-md-center mb-3'>
+					<Col xs lg='6'>
+						<Alert variant='success'>User profile has been successfully updated.</Alert>
+					</Col>
+				</Row>
+			)}
+			{error && (
+				<Row className='justify-content-md-center align-items-md-center mb-3'>
+					<Col xs lg='6'>
+						<Alert variant='danger'>{errorMsg}</Alert>
+					</Col>
+				</Row>
+			)}
+
 			<Row className='justify-content-md-center align-items-md-center'>
 				<Col xs lg='6'>
 					<Form onSubmit={handleSubmit}>
@@ -37,8 +69,10 @@ const UserDetailsForm = () => {
 								<Form.Control
 									type='text'
 									placeholder='John'
-									value={profileFirstName}
-									onChange={(e) => setProfileFirstName(e.target.value)}
+									name='firstName'
+									value={form.firstName}
+									onChange={handleChange}
+									disabled={loading}
 									required
 								/>
 							</FloatingLabel>
@@ -49,15 +83,26 @@ const UserDetailsForm = () => {
 								<Form.Control
 									type='text'
 									placeholder='Doe'
-									value={profileLastName}
-									onChange={(e) => setProfileLastName(e.target.value)}
+									name='lastName'
+									value={form.lastName}
+									onChange={handleChange}
+									disabled={loading}
 									required
 								/>
 							</FloatingLabel>
 						</Form.Group>
 
-						<Button variant='primary' type='submit'>
-							Update
+						<Button variant='primary' type='submit' disabled={loading}>
+							<Spinner
+								as='span'
+								animation='border'
+								size='sm'
+								role='status'
+								aria-hidden='true'
+								style={loading ? { display: "inline-block" } : { display: "none" }}
+							/>
+							<span className='visually-hidden'>Loading...</span>
+							<span style={loading ? { marginLeft: "5px" } : {}}>Update</span>
 						</Button>
 					</Form>
 				</Col>

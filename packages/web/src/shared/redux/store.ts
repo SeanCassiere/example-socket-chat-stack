@@ -24,3 +24,4 @@ export type RootState = ReturnType<typeof combinedReducers>;
 export const selectAuthUserState = (state: RootState) => state.authUser;
 // Selectors for Processes
 export const selectRegisterProcess = (state: RootState) => state.allProcesses.register;
+export const selectUpdateProfileProcess = (state: RootState) => state.allProcesses.updateProfileDetails;
