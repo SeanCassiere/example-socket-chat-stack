@@ -358,8 +358,9 @@
 			"UserForApplication": {
 				"type": "object",
 				"properties": {
-					"id": {
-						"type": "integer"
+					"userId": {
+						"type": "string",
+						"format": "uuid"
 					},
 					"firstName": {
 						"type": "string"
@@ -375,8 +376,9 @@
 			"UserForApplicationWithToken": {
 				"type": "object",
 				"properties": {
-					"id": {
-						"type": "integer"
+					"userId": {
+						"type": "string",
+						"format": "uuid"
 					},
 					"firstName": {
 						"type": "string"

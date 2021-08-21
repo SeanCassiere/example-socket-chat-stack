@@ -23,11 +23,11 @@ export const loginUser = asyncHandler(async (req: CustomRequest<{ username: stri
 	}
 
 	if (user && (await bcryptjs.compare(password, user.password))) {
-		const accessToken = generateToken("ACCESS_TOKEN", { id: `${user.id}` }, 30);
+		const accessToken = generateToken("ACCESS_TOKEN", { userId: user.userId }, 30);
 
 		const refreshTokenDuration = 60 * 18;
 		const cookieExpirationDate = addMinsToCurrentDate(refreshTokenDuration);
-		const refreshToken = generateToken("REFRESH_TOKEN", { id: `${user.id}` }, refreshTokenDuration);
+		const refreshToken = generateToken("REFRESH_TOKEN", { userId: user.userId }, refreshTokenDuration);
 
 		return res
 			.cookie(refreshTokenCookieConst, refreshToken, {
@@ -37,7 +37,7 @@ export const loginUser = asyncHandler(async (req: CustomRequest<{ username: stri
 				signed: true,
 			})
 			.json({
-				id: user.id,
+				userId: user.userId,
 				firstName: user.firstName,
 				lastName: user.lastName,
 				username: user.username,
@@ -54,7 +54,7 @@ export const loginUser = asyncHandler(async (req: CustomRequest<{ username: stri
 // @route GET /api/users/refreshAuth
 // @access Private
 export const refreshUserAccessTokenFromCookie = asyncHandler(async (req: CustomRequest<{}>, res) => {
-	const accessToken = generateToken("ACCESS_TOKEN", { id: `${req.user!.id}` }, 30);
+	const accessToken = generateToken("ACCESS_TOKEN", { userId: req.user!.userId }, 30);
 	res.json({ token: accessToken });
 });
 
@@ -79,7 +79,7 @@ export const registerUser = asyncHandler(
 		const userExists = await User.findOne({ where: { username: username.toLowerCase() } });
 
 		if (userExists) {
-			res.status(400).json({ body: { message: "Username already in use", propertyPath: "username" } });
+			res.status(400).json({ errors: { body: [{ message: "Username already in use", propertyPath: "username" }] } });
 		} else {
 			const newPassword = await hashPasswordForUser(password);
 
@@ -92,7 +92,7 @@ export const registerUser = asyncHandler(
 
 			if (user) {
 				return res.status(201).json({
-					id: user.id,
+					userId: user.userId,
 					firstName: user.firstName,
 					lastName: user.lastName,
 					username: user.username,
@@ -112,7 +112,7 @@ export const getUserProfile = asyncHandler(async (req: CustomRequest<{}>, res, n
 	const user = req.user;
 	if (user) {
 		return res.json({
-			id: user.id,
+			userId: user.userId,
 			firstName: user.firstName,
 			lastName: user.lastName,
 			username: user.username,
@@ -140,7 +140,7 @@ export const updateUserProfile = asyncHandler(
 				const updatedUser = await user.save();
 
 				return res.json({
-					id: updatedUser.id,
+					userId: updatedUser.userId,
 					firstName: updatedUser.firstName,
 					lastName: updatedUser.lastName,
 					username: updatedUser.username,
