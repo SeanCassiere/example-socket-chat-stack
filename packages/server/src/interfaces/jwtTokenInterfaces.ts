@@ -1,4 +1,4 @@
 export interface GeneratedTokenInterface {
-	id: string;
+	userId: string;
 	email?: string;
 }

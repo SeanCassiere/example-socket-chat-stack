@@ -8,8 +8,8 @@ const REFRESH_JWT_SECRET: Secret = environmentVariables.REFRESH_JWT_SECRET || "d
 
 type TokenTypes = "ACCESS_TOKEN" | "REFRESH_TOKEN";
 
-export const generateToken = (type: TokenTypes, { id, email }: GeneratedTokenInterface, mins: number) => {
-	let jwtPayload: GeneratedTokenInterface = { id };
+export const generateToken = (type: TokenTypes, { userId, email }: GeneratedTokenInterface, mins: number) => {
+	let jwtPayload: GeneratedTokenInterface = { userId };
 	const secret = type === "REFRESH_TOKEN" ? REFRESH_JWT_SECRET : JWT_SECRET;
 
 	if (email) jwtPayload = { ...jwtPayload, email };

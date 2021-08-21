@@ -19,7 +19,7 @@ export const protect = asyncHandler(async (req: CustomRequest<{}>, res, next: Ne
 			token = req.headers.authorization.split(" ")[1];
 			const decoded = verify(token, JWT_SECRET) as GeneratedTokenInterface;
 
-			const userFound = await User.findOne({ where: { id: decoded.id } });
+			const userFound = await User.findOne({ where: { userId: decoded.userId } });
 
 			if (userFound) {
 				req.user = userFound;
@@ -47,7 +47,7 @@ export const isRefreshCookieValid = asyncHandler(async (req: CustomRequest<{}>, 
 		try {
 			const decoded = verify(token, REFRESH_JWT_SECRET) as GeneratedTokenInterface;
 
-			const userFound = await User.findOne({ where: { id: decoded.id } });
+			const userFound = await User.findOne({ where: { userId: decoded.userId } });
 
 			if (userFound) {
 				req.user = userFound;
