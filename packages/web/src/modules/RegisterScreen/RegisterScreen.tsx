@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Container, FloatingLabel, Row, Col, Alert } from "react-bootstrap";
+import { Form, Container, Row, Col, Alert } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, selectRegisterProcess } from "#root/shared/redux/store";
@@ -7,6 +7,7 @@ import { resetProcess } from "#root/shared/redux/slices/allProcess";
 import { registerUserThunk } from "#root/shared/redux/thunks/allProcess/register.thunk";
 import { Link } from "react-router-dom";
 import SubmitButton from "#root/shared/components/Buttons/SubmitButton";
+import FloatingInput from "#root/shared/components/Inputs/FloatingInputForm";
 
 export const RegisterScreen = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -69,57 +70,46 @@ export const RegisterScreen = () => {
 			<Row className='justify-content-md-center align-items-md-center'>
 				<Col xs lg='6'>
 					<Form onSubmit={handleSubmit}>
-						<Form.Group className='mb-3' controlId='formBasicFirstName'>
-							<FloatingLabel controlId='floatingFirstName' label='First Name' className='mb-3'>
-								<Form.Control
-									type='text'
-									name='firstName'
-									placeholder='John'
-									onChange={handleChange}
-									value={form.firstName}
-									disabled={loading}
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.firstName}
+							name='firstName'
+							label='First Name'
+							loading={loading}
+							placeholder='John'
+							required
+						/>
 
-						<Form.Group className='mb-3' controlId='formBasicLastName'>
-							<FloatingLabel controlId='floatingLastName' label='Last Name' className='mb-3'>
-								<Form.Control
-									type='text'
-									placeholder='Doe'
-									name='lastName'
-									onChange={handleChange}
-									value={form.lastName}
-									disabled={loading}
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.lastName}
+							name='lastName'
+							label='Last Name'
+							loading={loading}
+							placeholder='Doe'
+							required
+						/>
 
-						<Form.Group className='mb-3' controlId='formBasicEmail'>
-							<FloatingLabel controlId='floatingUsername' label='Username' className='mb-3'>
-								<Form.Control
-									type='text'
-									placeholder='Your username'
-									name='username'
-									onChange={handleChange}
-									value={form.username}
-									disabled={loading}
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.username}
+							name='username'
+							label='Username'
+							loading={loading}
+							placeholder='Your unique username'
+							required
+						/>
 
-						<Form.Group className='mb-3' controlId='formBasicPassword'>
-							<FloatingLabel controlId='floatingPassword' label='Password' className='mb-3'>
-								<Form.Control
-									type='password'
-									placeholder='Password'
-									name='password'
-									onChange={handleChange}
-									value={form.password}
-									disabled={loading}
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.password}
+							name='password'
+							label='Password'
+							loading={loading}
+							placeholder='Password'
+							type='password'
+							required
+						/>
 
 						<SubmitButton loading={loading} label='Register' />
 					</Form>

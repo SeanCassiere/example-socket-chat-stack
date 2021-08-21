@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Button, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
+import { Alert, Col, FloatingLabel, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, selectAuthUserState, selectUpdateProfileProcess } from "#root/shared/redux/store";
 import { updateUserProfileThunk } from "#root/shared/redux/thunks/allProcess/updateProfile.thunk";
 import { resetProcess } from "#root/shared/redux/slices/allProcess";
 import SubmitButton from "#root/shared/components/Buttons/SubmitButton";
+import FloatingInput from "#root/shared/components/Inputs/FloatingInputForm";
 
 const UserDetailsForm = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -72,33 +73,25 @@ const UserDetailsForm = () => {
 							</FloatingLabel>
 						</Form.Group>
 
-						<Form.Group className='mb-3' controlId='formBasicFirstName'>
-							<FloatingLabel controlId='floatingFirstName' label='First Name' className='mb-3'>
-								<Form.Control
-									type='text'
-									placeholder='John'
-									name='firstName'
-									value={form.firstName}
-									onChange={handleChange}
-									disabled={loading}
-									required
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.firstName}
+							name='firstName'
+							label='First Name'
+							loading={loading}
+							placeholder='First Name'
+							required
+						/>
 
-						<Form.Group className='mb-3' controlId='formBasicLastName'>
-							<FloatingLabel controlId='floatingLastName' label='Last Name' className='mb-3'>
-								<Form.Control
-									type='text'
-									placeholder='Doe'
-									name='lastName'
-									value={form.lastName}
-									onChange={handleChange}
-									disabled={loading}
-									required
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.lastName}
+							name='lastName'
+							label='Last Name'
+							loading={loading}
+							placeholder='Last Name'
+							required
+						/>
 
 						<SubmitButton loading={loading} label='Update' />
 					</Form>

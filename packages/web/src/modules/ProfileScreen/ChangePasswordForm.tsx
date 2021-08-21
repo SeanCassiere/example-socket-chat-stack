@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Col, FloatingLabel, Form, Row } from "react-bootstrap";
+import { Alert, Col, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, selectChangeUserPasswordProcess } from "#root/shared/redux/store";
 import { changeUserPasswordThunk } from "#root/shared/redux/thunks/allProcess/changePassword.thunk copy";
 import { resetProcess } from "#root/shared/redux/slices/allProcess";
 import SubmitButton from "#root/shared/components/Buttons/SubmitButton";
+import FloatingInput from "#root/shared/components/Inputs/FloatingInputForm";
 
 const ChangePasswordForm = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -68,33 +69,27 @@ const ChangePasswordForm = () => {
 			<Row className='justify-content-md-center align-items-md-center'>
 				<Col xs lg='6'>
 					<Form onSubmit={handleSubmit}>
-						<Form.Group className='mb-3' controlId='floatingNewPassword'>
-							<FloatingLabel controlId='floatingNewPassword' label='New Password' className='mb-3'>
-								<Form.Control
-									type='password'
-									placeholder='New Password'
-									name='newPassword'
-									value={form.newPassword}
-									onChange={handleChange}
-									disabled={loading}
-									required
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.newPassword}
+							name='newPassword'
+							label='New Password'
+							loading={loading}
+							placeholder='New Password'
+							type='password'
+							required
+						/>
 
-						<Form.Group className='mb-3' controlId='floatingConfirmNewPassword'>
-							<FloatingLabel controlId='floatingConfirmNewPassword' label='Confirm new password' className='mb-3'>
-								<Form.Control
-									type='password'
-									placeholder='Confirm new password'
-									name='confirmPassword'
-									value={form.confirmPassword}
-									onChange={handleChange}
-									disabled={loading}
-									required
-								/>
-							</FloatingLabel>
-						</Form.Group>
+						<FloatingInput
+							handleChange={handleChange}
+							value={form.confirmPassword}
+							name='confirmPassword'
+							label='Confirm Password'
+							loading={loading}
+							placeholder='Confirm Password'
+							type='password'
+							required
+						/>
 
 						<SubmitButton loading={loading} label='Change Password' />
 					</Form>
