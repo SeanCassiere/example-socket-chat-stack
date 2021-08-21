@@ -79,7 +79,7 @@ export const registerUser = asyncHandler(
 		const userExists = await User.findOne({ where: { username: username.toLowerCase() } });
 
 		if (userExists) {
-			res.status(400).json({ body: { message: "Username already in use", propertyPath: "username" } });
+			res.status(400).json({ errors: { body: [{ message: "Username already in use", propertyPath: "username" }] } });
 		} else {
 			const newPassword = await hashPasswordForUser(password);
 
