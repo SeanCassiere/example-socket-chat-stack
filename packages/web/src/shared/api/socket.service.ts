@@ -5,6 +5,7 @@ const SOCKET_URL = process.env.REACT_APP_HOST_URL || "http://localhost:4000";
 const EVENTS = {
 	connection: "connection",
 	disconnection: "disconnect",
+	connect_error: "connect_error",
 	CLIENT: {
 		JOIN_ROOM: "JOIN_ROOM",
 		TURN_USER_ONLINE: "TURN_USER_ONLINE",
@@ -18,9 +19,15 @@ const EVENTS = {
 
 let socket: Socket;
 
-export const initiateSocketConnection = () => {
-	socket = io(SOCKET_URL);
+export const initiateSocketConnection = (token: string) => {
+	socket = io(SOCKET_URL, { auth: { token } });
 	console.log("Connection to Socket.IO server");
+
+	socket.on(EVENTS.connect_error, (err) => {
+		console.log(`err instanceof Error: ${err instanceof Error}`); // true
+		console.log(`err.message ${err.message}`); // not authorized
+		console.log(`err.data`, err.data); // { content: "Please retry later" }
+	});
 };
 
 export const disconnectSocket = () => {

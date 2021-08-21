@@ -13,7 +13,7 @@ import { disconnectSocket, initiateSocketConnection, socketGetAllOnlineUsers } f
 
 const App = () => {
 	const dispatch = useDispatch<AppDispatch>();
-	const { isAuthenticating, isLoggedIn, user } = useSelector(selectAuthUserState);
+	const { isAuthenticating, isLoggedIn, user, token } = useSelector(selectAuthUserState);
 
 	// auto login if cookie available
 	useEffect(() => {
@@ -22,13 +22,13 @@ const App = () => {
 
 	// if user is present
 	useEffect(() => {
-		if (isLoggedIn && user && user.username) {
-			initiateSocketConnection();
+		if (isLoggedIn && token && user && user.username) {
+			initiateSocketConnection(token);
 			socketGetAllOnlineUsers();
 		}
 
 		return () => disconnectSocket();
-	}, [isLoggedIn, user]);
+	}, [isLoggedIn, user, token]);
 
 	if (isAuthenticating) return <Loader />;
 
