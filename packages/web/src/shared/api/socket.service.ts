@@ -6,14 +6,12 @@ const EVENTS = {
 	connection: "connection",
 	disconnection: "disconnect",
 	CLIENT: {
-		CREATE_ROOM: "CREATE_ROOM",
-		SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
 		JOIN_ROOM: "JOIN_ROOM",
+		TURN_USER_ONLINE: "TURN_USER_ONLINE",
+		GET_ONLINE_USERS: "GET_ONLINE_USERS",
 	},
 	SERVER: {
-		ROOMS: "ROOMS",
-		JOINED_ROOM: "JOINED_ROOM",
-		ROOM_MESSAGE: "ROOM_MESSAGE",
+		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
 		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
 	},
 };
@@ -30,6 +28,18 @@ export const disconnectSocket = () => {
 		socket.disconnect();
 		console.log("Disconnecting socket...");
 	}
+};
+
+export const socketGetAllOnlineUsers = () => {
+	socket.emit(EVENTS.CLIENT.GET_ONLINE_USERS);
+
+	socket.on(EVENTS.SERVER.ALL_ONLINE_USERS, (users) => {
+		console.log(users);
+	});
+};
+
+export const socketPostShowCurrentUserOnline = (id: string) => {
+	socket.emit(EVENTS.CLIENT.TURN_USER_ONLINE, id);
 };
 
 export const joinRoom = () => {

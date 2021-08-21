@@ -11,17 +11,17 @@ const EVENTS = {
 	connection: "connection",
 	disconnection: "disconnect",
 	CLIENT: {
-		CREATE_ROOM: "CREATE_ROOM",
-		SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
 		JOIN_ROOM: "JOIN_ROOM",
+		TURN_USER_ONLINE: "TURN_USER_ONLINE",
+		GET_ONLINE_USERS: "GET_ONLINE_USERS",
 	},
 	SERVER: {
-		ROOMS: "ROOMS",
-		JOINED_ROOM: "JOINED_ROOM",
-		ROOM_MESSAGE: "ROOM_MESSAGE",
+		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
 		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
 	},
 };
+
+const users: string[] = [];
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
@@ -34,6 +34,23 @@ function socket({ io }: { io: Server }) {
 		 */
 		socket.on(EVENTS.disconnection, () => {
 			log.info("user disconnected");
+		});
+
+		/**
+		 * Get the online users
+		 */
+		socket.on(EVENTS.CLIENT.GET_ONLINE_USERS, () => {
+			log.info(`Getting online users for ${socket.id}`);
+			io.to(socket.id).emit(EVENTS.SERVER.ALL_ONLINE_USERS, users);
+		});
+
+		/**
+		 * Make user online
+		 */
+		socket.on(EVENTS.CLIENT.TURN_USER_ONLINE, (id) => {
+			log.info(`Turning user ${id} online for ${socket.id}`);
+			users.push(id);
+			io.emit(EVENTS.SERVER.ALL_ONLINE_USERS, users);
 		});
 
 		/**
