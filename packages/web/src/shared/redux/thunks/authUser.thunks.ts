@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import appAxiosInstance from "#root/shared/api/appInstance";
-import { UserForApplicationWithToken } from "#root/shared/interfaces/user/authUser";
+import { UserForApplication, UserForApplicationWithToken } from "#root/shared/interfaces/user/authUser";
 import { setUserAccessToken, setUserProfileDetails } from "../slices/authUser";
 
 export const userLoginThunk = createAsyncThunk(
@@ -27,3 +27,41 @@ export const userLoginThunk = createAsyncThunk(
 		return true;
 	}
 );
+
+export const userFetchRefreshedAccessTokenThunk = createAsyncThunk(
+	"authUser/userFetchNewAccessToken",
+	async (_, thunkApi) => {
+		const tokenRes = await appAxiosInstance.get<{ token: string }>(`/users/refreshToken`);
+
+		if (tokenRes && tokenRes.status === 200) {
+			const profileRes = await appAxiosInstance.get<UserForApplication>("/users/profile", {
+				headers: {
+					Authorization: `Bearer ${tokenRes.data.token}`,
+				},
+			});
+
+			if (profileRes && profileRes.status === 200) {
+				thunkApi.dispatch(setUserProfileDetails(profileRes.data));
+				thunkApi.dispatch(setUserAccessToken(tokenRes.data.token));
+				return true;
+			}
+
+			return thunkApi.rejectWithValue("profile not fetched");
+		}
+
+		console.log("login failed", tokenRes.data);
+		return thunkApi.rejectWithValue("cookie invalid");
+	}
+);
+
+// export const userFetchProfileThunk = createAsyncThunk("authUser/userFetchProfile", async (_, thunkApi) => {
+// 	const res = await appAxiosInstance.get<{ token: string }>(`/users/refreshToken`);
+
+// 	if (res && res.status === 200) {
+// 		thunkApi.dispatch(setUserAccessToken(res.data.token));
+// 		return true;
+// 	}
+
+// 	console.log("login failed", res.data);
+// 	return thunkApi.rejectWithValue("cookie invalid");
+// });

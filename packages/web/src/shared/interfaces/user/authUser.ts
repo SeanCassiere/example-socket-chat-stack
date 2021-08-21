@@ -6,3 +6,9 @@ export interface UserForApplicationWithToken {
 	token: string;
 	refreshToken: string;
 }
+export interface UserForApplication {
+	userId: string;
+	username: string;
+	firstName: string;
+	lastName: string;
+}

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 
 import { AppDispatch, selectAuthUserState } from "#root/shared/redux/store";
-// import { demoSetUserLoggedIn } from "#root/shared/redux/slices/authUser";
 import { userLoginThunk } from "#root/shared/redux/thunks/authUser.thunks";
 
 export const LoginScreen = () => {

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { userLoginThunk } from "../thunks/authUser.thunks";
+import { userFetchRefreshedAccessTokenThunk, userLoginThunk } from "../thunks/authUser.thunks";
 
 interface AuthUserSliceState {
 	token: string | null;
@@ -71,6 +71,17 @@ export const authUserSlice = createSlice({
 			state.isAuthenticating = false;
 		});
 		builder.addCase(userLoginThunk.rejected, (state) => {
+			state.isLoggedIn = false;
+			state.isAuthenticating = false;
+		});
+		builder.addCase(userFetchRefreshedAccessTokenThunk.pending, (state) => {
+			state.isAuthenticating = true;
+		});
+		builder.addCase(userFetchRefreshedAccessTokenThunk.fulfilled, (state) => {
+			state.isLoggedIn = true;
+			state.isAuthenticating = false;
+		});
+		builder.addCase(userFetchRefreshedAccessTokenThunk.rejected, (state) => {
 			state.isLoggedIn = false;
 			state.isAuthenticating = false;
 		});
