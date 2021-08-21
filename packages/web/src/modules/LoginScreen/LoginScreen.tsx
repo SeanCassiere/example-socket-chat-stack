@@ -18,9 +18,18 @@ export const LoginScreen = () => {
 		password: "",
 	});
 
-	// if user is logged in, redirect to dashboard
+	// if user is logged in, redirect to previous screen
 	useEffect(() => {
-		if (isLoggedIn) return history.push("/profile");
+		if (isLoggedIn) {
+			const {
+				location: { state },
+			} = history;
+			const routeState = state as any;
+
+			if (routeState && routeState.next) return history.push(routeState.next);
+
+			return history.push("/profile");
+		}
 	}, [history, isLoggedIn]);
 
 	function handleChange(evt: React.ChangeEvent<HTMLInputElement>) {
@@ -35,17 +44,6 @@ export const LoginScreen = () => {
 		e.preventDefault();
 
 		await dispatch(userLoginThunk(form));
-
-		if (isLoggedIn) {
-			const {
-				location: { state },
-			} = history;
-			const routeState = state as any;
-
-			if (routeState && routeState.next) return history.push(routeState.next);
-
-			return history.push("/profile");
-		}
 	};
 
 	return (

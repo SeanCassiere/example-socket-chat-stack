@@ -18,7 +18,7 @@ const EVENTS = {
 	},
 };
 
-const rooms: Record<string, { name: string }> = {};
+const rooms: { id: string; name: string }[] = [];
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
@@ -36,9 +36,7 @@ function socket({ io }: { io: Server }) {
 			// create a roomId
 			const roomId = v4();
 			// add a new room to the rooms object
-			rooms[roomId] = {
-				name: roomName,
-			};
+			rooms.push({ id: roomId, name: roomName });
 
 			socket.join(roomId);
 
@@ -49,6 +47,7 @@ function socket({ io }: { io: Server }) {
 			socket.emit(EVENTS.SERVER.ROOMS, rooms);
 			// emit event back the room creator saying they have joined a room
 			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+			log.info(`server joined: ${socket.id} has into room ${roomId}`);
 		});
 
 		/*
@@ -72,6 +71,7 @@ function socket({ io }: { io: Server }) {
 			socket.join(roomId);
 
 			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+			log.info(`${socket.id} has joined room ${roomId}`);
 		});
 	});
 }

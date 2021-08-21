@@ -2,14 +2,17 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 
-import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import App from "./App";
 import { store } from "#root/shared/redux/store";
+import SocketsProvider from "./shared/context/socket.context";
 
 ReactDOM.render(
 	<React.StrictMode>
 		<Provider store={store}>
-			<App />
+			<SocketsProvider>
+				<App />
+			</SocketsProvider>
 		</Provider>
 	</React.StrictMode>,
 	document.getElementById("root")
