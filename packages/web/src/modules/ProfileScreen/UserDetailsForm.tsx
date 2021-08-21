@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Button, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, selectAuthUserState, selectUpdateProfileProcess } from "#root/shared/redux/store";
 import { updateUserProfileThunk } from "#root/shared/redux/thunks/allProcess/updateProfile.thunk";
+import { resetProcess } from "#root/shared/redux/slices/allProcess";
+import SubmitButton from "#root/shared/components/Buttons/SubmitButton";
 
 const UserDetailsForm = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -17,6 +19,12 @@ const UserDetailsForm = () => {
 		firstName: firstName as string,
 		lastName: lastName as string,
 	});
+
+	useEffect(() => {
+		return () => {
+			dispatch(resetProcess("updateProfileDetails"));
+		};
+	}, [dispatch]);
 
 	function handleChange(evt: React.ChangeEvent<HTMLInputElement>) {
 		const value = evt.target.value;
@@ -92,18 +100,7 @@ const UserDetailsForm = () => {
 							</FloatingLabel>
 						</Form.Group>
 
-						<Button variant='primary' type='submit' disabled={loading}>
-							<Spinner
-								as='span'
-								animation='border'
-								size='sm'
-								role='status'
-								aria-hidden='true'
-								style={loading ? { display: "inline-block" } : { display: "none" }}
-							/>
-							<span className='visually-hidden'>Loading...</span>
-							<span style={loading ? { marginLeft: "5px" } : {}}>Update</span>
-						</Button>
+						<SubmitButton loading={loading} label='Update' />
 					</Form>
 				</Col>
 			</Row>

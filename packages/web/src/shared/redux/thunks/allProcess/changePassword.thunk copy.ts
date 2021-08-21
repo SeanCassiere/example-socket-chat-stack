@@ -7,10 +7,10 @@ import { UserForApplication } from "#root/shared/interfaces/user/authUser";
 import { setProcessError, setProcessLoading, setProcessSuccess } from "#root/shared/redux/slices/allProcess";
 import { setUserProfileDetails } from "#root/shared/redux/slices/authUser";
 
-export const updateUserProfileThunk = createAsyncThunk(
-	"allProcesses/updateUserProfile",
-	async ({ firstName, lastName }: { firstName: string; lastName: string }, thunkApi) => {
-		thunkApi.dispatch(setProcessLoading("updateProfileDetails"));
+export const changeUserPasswordThunk = createAsyncThunk(
+	"allProcesses/changePassword",
+	async ({ password }: { password: string }, thunkApi) => {
+		thunkApi.dispatch(setProcessLoading("changeUserPasswordProcess"));
 		const state = thunkApi.getState() as RootState;
 		const { token } = state.authUser;
 
@@ -18,8 +18,7 @@ export const updateUserProfileThunk = createAsyncThunk(
 			const res = await appAxiosInstance.put<UserForApplication>(
 				`/users/profile`,
 				{
-					firstName,
-					lastName,
+					password,
 				},
 				{
 					headers: {
@@ -30,19 +29,19 @@ export const updateUserProfileThunk = createAsyncThunk(
 
 			thunkApi.dispatch(setUserProfileDetails(res.data));
 
-			return thunkApi.dispatch(setProcessSuccess("updateProfileDetails"));
+			return thunkApi.dispatch(setProcessSuccess("changeUserPasswordProcess"));
 		} catch (error) {
 			if (error && error.response) {
 				const axiosErr = error as AxiosError;
 				thunkApi.dispatch(
 					setProcessError({
-						type: "updateProfileDetails",
+						type: "changeUserPasswordProcess",
 						data: axiosErr.response?.data,
-						msg: "User profile updating failed",
+						msg: "User password change failed",
 					})
 				);
 			}
-			return thunkApi.rejectWithValue("User profile updating failed");
+			return thunkApi.rejectWithValue("User password change failed");
 		}
 	}
 );

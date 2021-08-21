@@ -19,6 +19,7 @@ const initialEmptyProcess: ProcessInterface = {
 interface AllProcesses {
 	register: ProcessInterface;
 	updateProfileDetails: ProcessInterface;
+	changeUserPasswordProcess: ProcessInterface;
 }
 
 let allProcessesInitialState: AllProcesses;
@@ -26,6 +27,7 @@ let allProcessesInitialState: AllProcesses;
 allProcessesInitialState = {
 	register: initialEmptyProcess,
 	updateProfileDetails: initialEmptyProcess,
+	changeUserPasswordProcess: initialEmptyProcess,
 };
 
 export const allProcessesSlice = createSlice({

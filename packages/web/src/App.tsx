@@ -7,7 +7,7 @@ import "#root/App.css";
 import Routes from "./routes/Routes";
 import { AppDispatch, selectAuthUserState } from "./shared/redux/store";
 import { userFetchRefreshedAccessTokenThunk } from "./shared/redux/thunks/authUser.thunks";
-import Loader from "./shared/component/Loader/Loader";
+import Loader from "./shared/components/Loader/Loader";
 
 const App = () => {
 	const dispatch = useDispatch<AppDispatch>();

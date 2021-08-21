@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Container, FloatingLabel, Row, Col, Spinner, Alert } from "react-bootstrap";
+import { Form, Container, FloatingLabel, Row, Col, Alert } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, selectRegisterProcess } from "#root/shared/redux/store";
 import { resetProcess } from "#root/shared/redux/slices/allProcess";
 import { registerUserThunk } from "#root/shared/redux/thunks/allProcess/register.thunk";
 import { Link } from "react-router-dom";
+import SubmitButton from "#root/shared/components/Buttons/SubmitButton";
 
 export const RegisterScreen = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -120,18 +121,7 @@ export const RegisterScreen = () => {
 							</FloatingLabel>
 						</Form.Group>
 
-						<Button variant='primary' type='submit' disabled={loading}>
-							<Spinner
-								as='span'
-								animation='border'
-								size='sm'
-								role='status'
-								aria-hidden='true'
-								style={loading ? { display: "inline-block" } : { display: "none" }}
-							/>
-							<span className='visually-hidden'>Loading...</span>
-							<span style={loading ? { marginLeft: "5px" } : {}}>Register</span>
-						</Button>
+						<SubmitButton loading={loading} label='Register' />
 					</Form>
 				</Col>
 			</Row>
