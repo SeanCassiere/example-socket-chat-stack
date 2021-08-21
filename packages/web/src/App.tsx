@@ -8,10 +8,10 @@ import Routes from "./routes/Routes";
 import { AppDispatch, selectAuthUserState } from "./shared/redux/store";
 import { userFetchRefreshedAccessTokenThunk } from "./shared/redux/thunks/authUser.thunks";
 import Loader from "./shared/components/Loader/Loader";
-import { useSockets } from "./shared/context/socket.context";
+
+import { disconnectSocket, initiateSocketConnection, joinRoom } from "./shared/api/socket.service";
 
 const App = () => {
-	const { setUsername } = useSockets();
 	const dispatch = useDispatch<AppDispatch>();
 	const { isAuthenticating, isLoggedIn, user } = useSelector(selectAuthUserState);
 
@@ -20,10 +20,15 @@ const App = () => {
 		dispatch(userFetchRefreshedAccessTokenThunk());
 	}, [dispatch]);
 
-	// Set username to socket instance
+	// if user is present
 	useEffect(() => {
-		if (isLoggedIn && user && user.username) setUsername(user.username);
-	}, [setUsername, isLoggedIn, user]);
+		if (isLoggedIn && user && user.username) {
+			initiateSocketConnection();
+			joinRoom();
+		}
+
+		return () => disconnectSocket();
+	}, [isLoggedIn, user]);
 
 	if (isAuthenticating) return <Loader />;
 
