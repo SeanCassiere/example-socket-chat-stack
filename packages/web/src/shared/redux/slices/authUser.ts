@@ -53,9 +53,11 @@ export const authUserSlice = createSlice({
 			state.user.firstName = "John";
 			state.user.lastName = "Doe";
 		},
-		demoSetUserLoggedOut: (state) => {
+		setUserToLoggedOut: (state) => {
 			state.token = null;
 			state.isLoggedIn = false;
+			state.isAuthenticating = false;
+			state.user.userId = null;
 			state.user.username = null;
 			state.user.firstName = null;
 			state.user.lastName = null;
@@ -88,6 +90,7 @@ export const authUserSlice = createSlice({
 	},
 });
 
-export const { demoSetUserLoggedIn, setUserAccessToken, setUserProfileDetails } = authUserSlice.actions;
+export const { demoSetUserLoggedIn, setUserAccessToken, setUserProfileDetails, setUserToLoggedOut } =
+	authUserSlice.actions;
 
 export const authUserReducer = authUserSlice.reducer;

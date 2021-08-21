@@ -6,6 +6,7 @@ import Navbar from "#root/shared/component/Navbar/Navbar";
 import LoginScreen from "#root/modules/LoginScreen/LoginScreen";
 import RegisterScreen from "#root/modules/RegisterScreen/RegisterScreen";
 import ProfileScreen from "#root/modules/ProfileScreen/ProfileScreen";
+import LogoutScreen from "#root/modules/LogoutScreen/LogoutScreen";
 
 const Routes = () => {
 	return (
@@ -15,6 +16,7 @@ const Routes = () => {
 				<Switch>
 					<Route path='/' component={LoginScreen} exact />
 					<Route path='/login' component={LoginScreen} exact />
+					<Route path='/logout' component={LogoutScreen} exact />
 					<Route path='/register' component={RegisterScreen} exact />
 					<AuthRoute path='/profile' component={ProfileScreen} exact />
 				</Switch>

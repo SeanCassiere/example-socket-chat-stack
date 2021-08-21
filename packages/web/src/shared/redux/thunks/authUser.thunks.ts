@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import appAxiosInstance from "#root/shared/api/appInstance";
 import { UserForApplication, UserForApplicationWithToken } from "#root/shared/interfaces/user/authUser";
-import { setUserAccessToken, setUserProfileDetails } from "../slices/authUser";
+import { setUserAccessToken, setUserProfileDetails, setUserToLoggedOut } from "../slices/authUser";
 
 export const userLoginThunk = createAsyncThunk(
 	"authUser/userLogin",
@@ -53,6 +53,17 @@ export const userFetchRefreshedAccessTokenThunk = createAsyncThunk(
 		return thunkApi.rejectWithValue("cookie invalid");
 	}
 );
+
+export const userLogoutThunk = createAsyncThunk("authUser/userLogOut", async (_, thunkApi) => {
+	const res = await appAxiosInstance.get<{ success: boolean }>(`/users/logout`);
+
+	if (res && res.status !== 200) {
+		return thunkApi.rejectWithValue("logout failed");
+	}
+
+	thunkApi.dispatch(setUserToLoggedOut());
+	return true;
+});
 
 // export const userFetchProfileThunk = createAsyncThunk("authUser/userFetchProfile", async (_, thunkApi) => {
 // 	const res = await appAxiosInstance.get<{ token: string }>(`/users/refreshToken`);

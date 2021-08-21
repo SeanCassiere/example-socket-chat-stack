@@ -16,7 +16,7 @@ export const LoginScreen = () => {
 
 	// if user is logged in, redirect to dashboard
 	useEffect(() => {
-		if (isLoggedIn) return history.push("/dashboard");
+		if (isLoggedIn) return history.push("/profile");
 	}, [history, isLoggedIn]);
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -32,7 +32,7 @@ export const LoginScreen = () => {
 
 			if (routeState && routeState.next) return history.push(routeState.next);
 
-			return history.push("/dashboard");
+			return history.push("/profile");
 		}
 	};
 
