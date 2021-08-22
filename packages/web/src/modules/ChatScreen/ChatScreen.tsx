@@ -1,4 +1,4 @@
-import { socketCreateNewRoom, socketSendMessageToRoom } from "#root/shared/api/socket.service";
+import { socketAddUserToRoom, socketCreateNewRoom, socketSendMessageToRoom } from "#root/shared/api/socket.service";
 import { selectChatRoomsState } from "#root/shared/redux/store";
 import React, { useState } from "react";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
@@ -12,6 +12,8 @@ export const ChatScreen = () => {
 	const [roomName, setRoomName] = useState("");
 	const [roomType, setRoomType] = useState<"single" | "group">("single");
 
+	const [guestUserId, setGuestUserId] = useState("");
+
 	function handleSendMessageSubmit(e: React.SyntheticEvent) {
 		e.preventDefault();
 		socketSendMessageToRoom(roomId, chatContent);
@@ -21,6 +23,11 @@ export const ChatScreen = () => {
 	function handleCreateRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
 		socketCreateNewRoom({ type: roomType, name: roomName });
+	}
+
+	function handleJoinGuestToRoom(e: React.SyntheticEvent) {
+		e.preventDefault();
+		socketAddUserToRoom({ roomId, userId: guestUserId });
 	}
 
 	return (
@@ -42,7 +49,7 @@ export const ChatScreen = () => {
 									<option value='single'>single</option>
 									<option value='group'>group</option>
 								</select>
-								<button>Create Room</button>
+								<button type='submit'>Create Room</button>
 							</form>
 						</Col>
 					</Row>
@@ -72,7 +79,24 @@ export const ChatScreen = () => {
 				<Col xs='6' className='bg-info'>
 					<Row>
 						<Col>
-							<div style={{ minHeight: "100px" }}></div>
+							<form className='h-100 p-2' onSubmit={handleJoinGuestToRoom}>
+								<h5>Join userId to room</h5>
+								<input
+									type='text'
+									value={roomId}
+									onChange={(e) => setRoomId(e.target.value)}
+									placeholder='Room Id'
+									required
+								/>
+								<input
+									type='text'
+									value={guestUserId}
+									onChange={(e) => setGuestUserId(e.target.value)}
+									placeholder='User Id'
+									required
+								/>
+								<button type='submit'>Join guest to this room</button>
+							</form>
 						</Col>
 					</Row>
 					<Row>
@@ -93,7 +117,7 @@ export const ChatScreen = () => {
 									placeholder='Message'
 									required
 								/>
-								<button>Send Message</button>
+								<button type='submit'>Send Message</button>
 							</form>
 						</Col>
 					</Row>

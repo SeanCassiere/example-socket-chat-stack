@@ -47,6 +47,7 @@ const globalUserRoomConnections: UserRoomConnection[] = [
 ];
 
 let activeUsers: Record<string, string[]> = {};
+type OnlineUsers = typeof activeUsers;
 function addUserOnline(socketId: string, userId: string) {
 	// If user not exist, add an empty key
 	if (!activeUsers[userId]) {
@@ -79,6 +80,11 @@ function removeUserOnline(socketId: string, userId: string) {
 		...activeUsers,
 		[userId]: newSocketList,
 	};
+}
+
+function getOnlineUserSocketsList(users: OnlineUsers, userId: string) {
+	if (users[userId]) return users[userId];
+	return [];
 }
 
 /**
@@ -127,6 +133,12 @@ function isRoomAccessibleToUser(allConnections: UserRoomConnection[], roomId: st
 	return false;
 }
 
+function isUserAlreadyInRoom(allConnections: UserRoomConnection[], roomId: string, userId: string) {
+	const res = allConnections.find((c) => c.roomId === roomId && c.userId === userId);
+	if (res) return true;
+	return false;
+}
+
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
 
@@ -172,6 +184,8 @@ function socket({ io }: { io: Server }) {
 		 * on(createNewRoom) => create Room and join user to the room
 		 */
 		socket.on(EVENTS.CLIENT.CREATE_A_ROOM, ({ name, type }) => {
+			const socketsForUser = getOnlineUserSocketsList(activeUsers, socket.handshake.auth.userId);
+
 			const newRoom: Room = { roomId: v4(), type, name };
 			globalRooms.push(newRoom); //Push to global rooms
 
@@ -181,6 +195,7 @@ function socket({ io }: { io: Server }) {
 				userId: socket.handshake.auth.userId,
 			};
 			globalUserRoomConnections.push(newConnection); // Push to global conns
+			socketsForUser.forEach((soc) => socket.to(soc).socketsJoin(newRoom.roomId));
 			socket.join(newRoom.roomId);
 
 			const { returnRoomsListToUser } = getUserConnections(
@@ -188,23 +203,38 @@ function socket({ io }: { io: Server }) {
 				globalUserRoomConnections,
 				socket.handshake.auth.userId
 			);
-			// Return to use all their rooms
+			// Return to user all their rooms
+
+			socketsForUser.forEach((soc) => {
+				socket.to(soc).emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
+			});
 			socket.emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
 		});
 
 		/**
-		 * @todo
-		 * on(client->entersRoom) => load previous messages
-		 */
-
-		/**
-		 * @todo
+		 * @done
 		 * on (client-> add new user to room) create connection Object and emit to new user the room
 		 */
 		socket.on(EVENTS.CLIENT.CLIENT_ADD_USER_TO_ROOM, ({ roomId, userId }) => {
-			if (isRoomAccessibleToUser(globalUserRoomConnections, roomId, socket.handshake.auth.userId)) {
+			/**
+			 * If this room is accessible by this user
+			 * If this user is not already connected to this rooms
+			 */
+			if (
+				isRoomAccessibleToUser(globalUserRoomConnections, roomId, socket.handshake.auth.userId) &&
+				!isUserAlreadyInRoom(globalUserRoomConnections, roomId, userId)
+			) {
+				// Create the new connection
 				const newConnection: UserRoomConnection = { connectionId: v4(), roomId, userId };
-				log.warn(newConnection);
+				globalUserRoomConnections.push(newConnection);
+
+				// Find and broadcast this new connection to the user by updating their rooms
+				const socketsForUser = getOnlineUserSocketsList(activeUsers, userId);
+				const { returnRoomsListToUser } = getUserConnections(globalRooms, globalUserRoomConnections, userId);
+				socketsForUser.forEach((soc) => {
+					socket.in(soc).socketsJoin(roomId);
+					socket.in(soc).emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
+				});
 			}
 		});
 	});
