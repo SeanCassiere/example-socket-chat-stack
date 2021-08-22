@@ -16,6 +16,7 @@ const EVENTS = {
 		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
 		CREATE_A_ROOM: "CREATE_A_ROOM",
 		CLIENT_ADD_USER_TO_ROOM: "CLIENT_ADD_USER_TO_ROOM",
+		CLIENT_REMOVE_USER_FROM_ROOM: "CLIENT_REMOVE_USER_FROM_ROOM",
 	},
 	SERVER: {
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
@@ -28,7 +29,7 @@ interface Room {
 	type: "single" | "group";
 	name: string;
 }
-const globalRooms: Room[] = [
+let globalRooms: Room[] = [
 	{ roomId: "qu02F3RW2", type: "single", name: "single chat with bob1 and bob2" },
 	{ roomId: "RD05TU9Lc", type: "group", name: "group chat with bob1, bob2 and bob3" },
 ];
@@ -38,7 +39,7 @@ interface UserRoomConnection {
 	roomId: string;
 	userId: string;
 }
-const globalUserRoomConnections: UserRoomConnection[] = [
+let globalUserRoomConnections: UserRoomConnection[] = [
 	{ connectionId: "Ob3CfnLHs", roomId: "qu02F3RW2", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
 	{ connectionId: "irqRP_2Ts", roomId: "qu02F3RW2", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
 	{ connectionId: "Je-0XXsH2", roomId: "RD05TU9Lc", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
@@ -235,6 +236,27 @@ function socket({ io }: { io: Server }) {
 					socket.in(soc).socketsJoin(roomId);
 					socket.in(soc).emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
 				});
+			}
+		});
+
+		/**
+		 * @done
+		 * on (client-> remove user from room) remove connection and emit the room list back to the user
+		 */
+		socket.on(EVENTS.CLIENT.CLIENT_REMOVE_USER_FROM_ROOM, ({ roomId, userId }) => {
+			if (isRoomAccessibleToUser(globalUserRoomConnections, roomId, socket.handshake.auth.userId)) {
+				const findConnection = globalUserRoomConnections.filter(
+					(conn) => conn.roomId === roomId && conn.userId === userId
+				);
+				const newConnList = globalUserRoomConnections.filter((conn) => conn !== findConnection[0]);
+				globalUserRoomConnections = newConnList;
+				// console.log("Connections at removal", globalUserRoomConnections);
+
+				// Find and broadcast this new connection to the user by updating their rooms
+				const socketsForUser = getOnlineUserSocketsList(activeUsers, userId);
+				const { returnRoomsListToUser } = getUserConnections(globalRooms, globalUserRoomConnections, userId);
+				io.to(socketsForUser).socketsLeave(roomId);
+				io.to(socketsForUser).emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
 			}
 		});
 	});

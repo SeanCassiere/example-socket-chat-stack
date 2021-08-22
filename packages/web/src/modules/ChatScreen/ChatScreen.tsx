@@ -1,10 +1,19 @@
-import { socketAddUserToRoom, socketCreateNewRoom, socketSendMessageToRoom } from "#root/shared/api/socket.service";
-import { selectChatRoomsState } from "#root/shared/redux/store";
+import { selectAuthUserState, selectChatRoomsState } from "#root/shared/redux/store";
 import React, { useState } from "react";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 
+import {
+	socketAddUserToRoom,
+	socketCreateNewRoom,
+	socketSendMessageToRoom,
+	socketRemoveUserFromRoom,
+} from "#root/shared/api/socket.service";
+
 export const ChatScreen = () => {
+	const {
+		user: { userId: authUserId },
+	} = useSelector(selectAuthUserState);
 	const { myRooms } = useSelector(selectChatRoomsState);
 	const [roomId, setRoomId] = useState("");
 	const [chatContent, setChatContent] = useState("");
@@ -28,6 +37,11 @@ export const ChatScreen = () => {
 	function handleJoinGuestToRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
 		socketAddUserToRoom({ roomId, userId: guestUserId });
+	}
+
+	function handleLeaveRoom(e: React.SyntheticEvent) {
+		e.preventDefault();
+		socketRemoveUserFromRoom({ roomId, userId: guestUserId });
 	}
 
 	return (
@@ -64,11 +78,16 @@ export const ChatScreen = () => {
 											<Button onClick={() => setRoomId(r.roomId)} size='sm'>
 												Select
 											</Button>
+											<Button
+												variant='danger'
+												onClick={() => socketRemoveUserFromRoom({ roomId: r.roomId, userId: authUserId as string })}
+												size='sm'
+											>
+												Leave
+											</Button>
 										</Card.Header>
 										<Card.Body>
-											<Card.Text>
-												<p>{r.name}</p>
-											</Card.Text>
+											<Card.Text>{r.name}</Card.Text>
 										</Card.Body>
 									</Card>
 								))}
@@ -80,7 +99,7 @@ export const ChatScreen = () => {
 					<Row>
 						<Col>
 							<form className='h-100 p-2' onSubmit={handleJoinGuestToRoom}>
-								<h5>Join userId to room</h5>
+								<h5>Join new userId to room</h5>
 								<input
 									type='text'
 									value={roomId}
@@ -95,7 +114,31 @@ export const ChatScreen = () => {
 									placeholder='User Id'
 									required
 								/>
-								<button type='submit'>Join guest to this room</button>
+								<Button type='submit'>Join guest to this room</Button>
+							</form>
+						</Col>
+					</Row>
+					<Row>
+						<Col>
+							<form className='h-100 p-2' onSubmit={handleLeaveRoom}>
+								<h5>Remove user from room</h5>
+								<input
+									type='text'
+									value={roomId}
+									onChange={(e) => setRoomId(e.target.value)}
+									placeholder='Room Id'
+									required
+								/>
+								<input
+									type='text'
+									value={guestUserId}
+									onChange={(e) => setGuestUserId(e.target.value)}
+									placeholder='User Id'
+									required
+								/>
+								<Button type='submit' variant='danger'>
+									Remove user from this room
+								</Button>
 							</form>
 						</Col>
 					</Row>
@@ -117,7 +160,7 @@ export const ChatScreen = () => {
 									placeholder='Message'
 									required
 								/>
-								<button type='submit'>Send Message</button>
+								<Button type='submit'>Send Message</Button>
 							</form>
 						</Col>
 					</Row>

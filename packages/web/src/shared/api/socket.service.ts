@@ -13,6 +13,7 @@ const EVENTS = {
 		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
 		CREATE_A_ROOM: "CREATE_A_ROOM",
 		CLIENT_ADD_USER_TO_ROOM: "CLIENT_ADD_USER_TO_ROOM",
+		CLIENT_REMOVE_USER_FROM_ROOM: "CLIENT_REMOVE_USER_FROM_ROOM",
 	},
 	SERVER: {
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
@@ -64,7 +65,7 @@ export const socketListenToRoomMessages = () => {
 			draggable: true,
 			progress: undefined,
 		});
-		console.log(messageObject);
+		// console.log(messageObject);
 	});
 };
 
@@ -74,4 +75,8 @@ export const socketAddUserToRoom = ({ roomId, userId }: { roomId: string; userId
 
 export const socketCreateNewRoom = ({ name, type }: { name: string; type: "single" | "group" }) => {
 	socket.emit(EVENTS.CLIENT.CREATE_A_ROOM, { name, type });
+};
+
+export const socketRemoveUserFromRoom = ({ roomId, userId }: { roomId: string; userId: string }) => {
+	socket.emit(EVENTS.CLIENT.CLIENT_REMOVE_USER_FROM_ROOM, { roomId, userId });
 };
