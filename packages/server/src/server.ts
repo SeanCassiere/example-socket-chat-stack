@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import cors, { CorsOptions } from "cors";
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
