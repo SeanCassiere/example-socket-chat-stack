@@ -10,32 +10,29 @@ import { AppDispatch, selectAuthUserState } from "./shared/redux/store";
 import { userFetchRefreshedAccessTokenThunk } from "./shared/redux/thunks/authUser.thunks";
 import Loader from "./shared/components/Loader/Loader";
 
-import {
-	disconnectSocket,
-	initiateSocketConnection,
-	socketGetAllConnectedRooms,
-	socketListenToRoomMessages,
-} from "./shared/api/socket.service";
+import { useSocket } from "./shared/context/Socket.context";
 
 const App = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const { isAuthenticating, isLoggedIn, user, token } = useSelector(selectAuthUserState);
+
+	const { connectSocket, disconnectSocket, getMyRooms, listenForMessages } = useSocket();
 
 	// auto login if cookie available
 	useEffect(() => {
 		dispatch(userFetchRefreshedAccessTokenThunk());
 	}, [dispatch]);
 
-	// if user is present
+	// if the user logs-in, activate these socket methods
 	useEffect(() => {
 		if (isLoggedIn && token && user && user.username) {
-			initiateSocketConnection(token);
-			socketGetAllConnectedRooms();
-			socketListenToRoomMessages();
+			connectSocket(token);
+			getMyRooms();
+			listenForMessages();
 		}
 
 		return () => disconnectSocket();
-	}, [isLoggedIn, user, token]);
+	}, [isLoggedIn, user, token, connectSocket, disconnectSocket, getMyRooms, listenForMessages]);
 
 	if (isAuthenticating) return <Loader />;
 

@@ -24,6 +24,7 @@ const EVENTS = {
 
 let socket: Socket;
 
+// Connect to the server
 export const initiateSocketConnection = (token: string) => {
 	socket = io(SOCKET_URL, { auth: { token } });
 	console.log("Connection to Socket.IO server");
@@ -34,26 +35,34 @@ export const initiateSocketConnection = (token: string) => {
 		console.log(`err.data`, err.data); // { content: "Please retry later" }
 	});
 };
+export type TypeInitiateSocketConnection = typeof initiateSocketConnection;
 
+// Disconnect from the server
 export const disconnectSocket = () => {
 	if (socket) {
 		socket.disconnect();
 		console.log("Disconnecting socket...");
 	}
 };
+export type TypeDisconnectSocket = typeof disconnectSocket;
 
+// Get the rooms I am connected to
 export const socketGetAllConnectedRooms = () => {
 	socket.on(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, (rooms) => {
-		console.log("Rooms you are subscribed to:");
-		console.log(rooms);
+		// console.log("Rooms you are subscribed to:");
+		// console.log(rooms);
 		store.dispatch(setMyChatRooms(rooms));
 	});
 };
+export type TypeSocketGetAllConnectedRooms = typeof socketGetAllConnectedRooms;
 
+// Send a message
 export const socketSendMessageToRoom = (roomId: string, message: string) => {
 	socket.emit(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, { roomId, message });
 };
+export type TypeSocketSendMessageToRoom = typeof socketSendMessageToRoom;
 
+// Listen for messages directed to me or my rooms
 export const socketListenToRoomMessages = () => {
 	socket.on(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, (messageObject) => {
 		toast(messageObject.message, {
@@ -68,15 +77,22 @@ export const socketListenToRoomMessages = () => {
 		// console.log(messageObject);
 	});
 };
+export type TypeSocketListenToRoomMessages = typeof socketListenToRoomMessages;
 
-export const socketAddUserToRoom = ({ roomId, userId }: { roomId: string; userId: string }) => {
+// Add user to a room
+export const socketAddUserToRoom = (roomId: string, userId: string) => {
 	socket.emit(EVENTS.CLIENT.CLIENT_ADD_USER_TO_ROOM, { roomId, userId });
 };
+export type TypeSocketAddUserToRoom = typeof socketAddUserToRoom;
 
-export const socketCreateNewRoom = ({ name, type }: { name: string; type: "single" | "group" }) => {
+// Create a new room and join me into the room
+export const socketCreateNewRoom = (name: string, type: "single" | "group") => {
 	socket.emit(EVENTS.CLIENT.CREATE_A_ROOM, { name, type });
 };
+export type TypeSocketCreateNewRoom = typeof socketCreateNewRoom;
 
-export const socketRemoveUserFromRoom = ({ roomId, userId }: { roomId: string; userId: string }) => {
+// Remove user (authUser or guest) from a room
+export const socketRemoveUserFromRoom = (roomId: string, userId: string) => {
 	socket.emit(EVENTS.CLIENT.CLIENT_REMOVE_USER_FROM_ROOM, { roomId, userId });
 };
+export type TypeSocketRemoveUserFromRoom = typeof socketRemoveUserFromRoom;

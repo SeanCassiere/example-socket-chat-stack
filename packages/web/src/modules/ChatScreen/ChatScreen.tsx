@@ -3,18 +3,17 @@ import React, { useState } from "react";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 
-import {
-	socketAddUserToRoom,
-	socketCreateNewRoom,
-	socketSendMessageToRoom,
-	socketRemoveUserFromRoom,
-} from "#root/shared/api/socket.service";
+import { useSocket } from "#root/shared/context/Socket.context";
 
 export const ChatScreen = () => {
 	const {
 		user: { userId: authUserId },
 	} = useSelector(selectAuthUserState);
 	const { myRooms } = useSelector(selectChatRoomsState);
+
+	// Socket methods
+	const { sendMessage, createRoom, removeUser, addUser } = useSocket();
+
 	const [roomId, setRoomId] = useState("");
 	const [chatContent, setChatContent] = useState("");
 
@@ -25,23 +24,23 @@ export const ChatScreen = () => {
 
 	function handleSendMessageSubmit(e: React.SyntheticEvent) {
 		e.preventDefault();
-		socketSendMessageToRoom(roomId, chatContent);
+		sendMessage(roomId, chatContent);
 		setChatContent("");
 	}
 
 	function handleCreateRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
-		socketCreateNewRoom({ type: roomType, name: roomName });
+		createRoom(roomName, roomType);
 	}
 
 	function handleJoinGuestToRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
-		socketAddUserToRoom({ roomId, userId: guestUserId });
+		addUser(roomId, guestUserId);
 	}
 
 	function handleLeaveRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
-		socketRemoveUserFromRoom({ roomId, userId: guestUserId });
+		removeUser(roomId, guestUserId);
 	}
 
 	return (
@@ -78,11 +77,7 @@ export const ChatScreen = () => {
 											<Button onClick={() => setRoomId(r.roomId)} size='sm'>
 												Select
 											</Button>
-											<Button
-												variant='danger'
-												onClick={() => socketRemoveUserFromRoom({ roomId: r.roomId, userId: authUserId as string })}
-												size='sm'
-											>
+											<Button variant='danger' onClick={() => removeUser(r.roomId, authUserId as string)} size='sm'>
 												Leave
 											</Button>
 										</Card.Header>
