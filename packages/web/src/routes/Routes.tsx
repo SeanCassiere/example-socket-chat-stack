@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 import { AuthRoute } from "./AuthRoute";
 import Navbar from "#root/shared/components/Navbar/Navbar";
@@ -15,6 +16,17 @@ const Routes = () => {
 		<>
 			<BrowserRouter>
 				<Navbar />
+				<ToastContainer
+					position='top-right'
+					autoClose={5000}
+					hideProgressBar={false}
+					newestOnTop={false}
+					closeOnClick
+					rtl={false}
+					pauseOnFocusLoss={false}
+					draggable
+					pauseOnHover
+				/>
 				<Switch>
 					<Route path='/' component={LoginScreen} exact />
 					<Route path='/login' component={LoginScreen} exact />

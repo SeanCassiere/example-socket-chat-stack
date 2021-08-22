@@ -12,6 +12,7 @@ export const ChatScreen = () => {
 	function handleSendMessageSubmit(e: React.SyntheticEvent) {
 		e.preventDefault();
 		socketSendMessageToRoom(roomId, chatContent);
+		setChatContent("");
 	}
 
 	function handleCreateRoom(e: React.SyntheticEvent) {

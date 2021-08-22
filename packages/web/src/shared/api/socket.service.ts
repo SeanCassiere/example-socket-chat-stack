@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import { io, Socket } from "socket.io-client";
 
 const SOCKET_URL = process.env.REACT_APP_HOST_URL || "http://localhost:4000";
@@ -50,6 +51,15 @@ export const socketSendMessageToRoom = (roomId: string, message: string) => {
 
 export const socketListenToRoomMessages = () => {
 	socket.on(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, (messageObject) => {
+		toast(messageObject.message, {
+			position: "top-right",
+			autoClose: 5000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			progress: undefined,
+		});
 		console.log(messageObject);
 	});
 };
