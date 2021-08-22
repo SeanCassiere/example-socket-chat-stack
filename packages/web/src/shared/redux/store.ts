@@ -2,10 +2,12 @@ import { configureStore, Reducer, AnyAction, combineReducers } from "@reduxjs/to
 
 import { authUserReducer } from "#root/shared/redux/slices/authUser";
 import { allProcessesReducer } from "#root/shared/redux/slices/allProcess";
+import { chatRoomsReducer } from "./slices/chatRooms";
 
 const combinedReducers = combineReducers({
 	allProcesses: allProcessesReducer,
 	authUser: authUserReducer,
+	chatRooms: chatRoomsReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
@@ -22,6 +24,7 @@ export type RootState = ReturnType<typeof combinedReducers>;
 
 // Selectors
 export const selectAuthUserState = (state: RootState) => state.authUser;
+export const selectChatRoomsState = (state: RootState) => state.chatRooms;
 
 // Selectors for Processes
 export const selectRegisterProcess = (state: RootState) => state.allProcesses.register;

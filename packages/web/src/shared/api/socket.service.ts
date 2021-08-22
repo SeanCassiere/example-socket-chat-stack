@@ -1,5 +1,7 @@
 import { toast } from "react-toastify";
 import { io, Socket } from "socket.io-client";
+import { setMyChatRooms } from "../redux/slices/chatRooms";
+import { store } from "../redux/store";
 
 const SOCKET_URL = process.env.REACT_APP_HOST_URL || "http://localhost:4000";
 
@@ -42,6 +44,7 @@ export const socketGetAllConnectedRooms = () => {
 	socket.on(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, (rooms) => {
 		console.log("Rooms you are subscribed to:");
 		console.log(rooms);
+		store.dispatch(setMyChatRooms(rooms));
 	});
 };
 
