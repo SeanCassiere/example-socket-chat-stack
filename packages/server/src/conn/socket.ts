@@ -15,6 +15,7 @@ const EVENTS = {
 	CLIENT: {
 		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
 		CREATE_A_ROOM: "CREATE_A_ROOM",
+		CLIENT_ADD_USER_TO_ROOM: "CLIENT_ADD_USER_TO_ROOM",
 	},
 	SERVER: {
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
@@ -44,6 +45,42 @@ const globalUserRoomConnections: UserRoomConnection[] = [
 	{ connectionId: "dDl6C6KYim9dQ", roomId: "RD05TU9Lc", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
 	{ connectionId: "HpziR7gZzdFQ", roomId: "RD05TU9Lc", userId: "6e19c360-49ff-4030-99aa-0b148ad35c00" },
 ];
+
+let activeUsers: Record<string, string[]> = {};
+function addUserOnline(socketId: string, userId: string) {
+	// If user not exist, add an empty key
+	if (!activeUsers[userId]) {
+		activeUsers = {
+			...activeUsers,
+			[userId]: [],
+		};
+	}
+
+	// add this socket to the user
+	activeUsers[userId].push(socketId);
+}
+
+function removeItemAll(arr: string[], value: string) {
+	let i: number = 0;
+	while (i < arr.length) {
+		if (arr[i] === value) {
+			arr.splice(i, 1);
+		} else {
+			++i;
+		}
+	}
+	return arr;
+}
+
+function removeUserOnline(socketId: string, userId: string) {
+	const availableUserSockets = activeUsers[userId];
+	const newSocketList = removeItemAll(availableUserSockets, socketId);
+	activeUsers = {
+		...activeUsers,
+		[userId]: newSocketList,
+	};
+}
+
 /**
  * Single chat with each other:
  * 	bob1 -> bob2
@@ -83,6 +120,13 @@ function getUserConnections(allRooms: Room[], allConnections: UserRoomConnection
 	return { returnRoomsListToUser, serverJoinUserToTheseRoomIds };
 }
 
+function isRoomAccessibleToUser(allConnections: UserRoomConnection[], roomId: string, userId: string) {
+	const availableConns = allConnections.filter((conn) => conn.roomId === roomId && conn.userId === userId);
+	if (availableConns && availableConns.length > 0) return true;
+	log.warn(`User ${userId} tried to access roomId ${roomId} in an unauthorized state`);
+	return false;
+}
+
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
 
@@ -90,9 +134,12 @@ function socket({ io }: { io: Server }) {
 
 	io.on(EVENTS.connection, (socket: Socket) => {
 		log.info(`User connected ${socket.id}, userId is ${socket.handshake.auth.userId}`);
+		addUserOnline(socket.id, socket.handshake.auth.userId);
+		// log.warn(activeUsers); //Showing active users
 
 		socket.on(EVENTS.disconnection, async () => {
 			//User disconnect cleanup
+			removeUserOnline(socket.id, socket.handshake.auth.userId);
 			log.info(`User ${socket.handshake.auth.userId} has disconnected`);
 		});
 
@@ -114,10 +161,7 @@ function socket({ io }: { io: Server }) {
 		 **/
 		socket.on(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, ({ roomId, message }) => {
 			// Filter and see if this user has a connection to this room
-			const availableConns = globalUserRoomConnections.filter(
-				(conn) => conn.roomId === roomId && conn.userId === socket.handshake.auth.userId
-			);
-			if (availableConns && availableConns.length > 0) {
+			if (isRoomAccessibleToUser(globalUserRoomConnections, roomId, socket.handshake.auth.userId)) {
 				const messageObject = { id: v4(), roomId, message };
 				socket.to(roomId).emit(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, messageObject);
 			}
@@ -137,8 +181,6 @@ function socket({ io }: { io: Server }) {
 				userId: socket.handshake.auth.userId,
 			};
 			globalUserRoomConnections.push(newConnection); // Push to global conns
-			log.warn(`New room created`);
-			log.warn(newRoom);
 			socket.join(newRoom.roomId);
 
 			const { returnRoomsListToUser } = getUserConnections(
@@ -159,6 +201,12 @@ function socket({ io }: { io: Server }) {
 		 * @todo
 		 * on (client-> add new user to room) create connection Object and emit to new user the room
 		 */
+		socket.on(EVENTS.CLIENT.CLIENT_ADD_USER_TO_ROOM, ({ roomId, userId }) => {
+			if (isRoomAccessibleToUser(globalUserRoomConnections, roomId, socket.handshake.auth.userId)) {
+				const newConnection: UserRoomConnection = { connectionId: v4(), roomId, userId };
+				log.warn(newConnection);
+			}
+		});
 	});
 }
 
