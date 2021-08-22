@@ -1,7 +1,7 @@
 import { socketCreateNewRoom, socketSendMessageToRoom } from "#root/shared/api/socket.service";
 import { selectChatRoomsState } from "#root/shared/redux/store";
 import React, { useState } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 
 export const ChatScreen = () => {
@@ -51,12 +51,17 @@ export const ChatScreen = () => {
 							<div>
 								<h5>My Rooms</h5>
 								{myRooms.map((r) => (
-									<Card key={r.roomId} className='m-2' onClick={() => setRoomId(r.roomId)}>
+									<Card key={r.roomId} className='m-2'>
 										<Card.Header>
 											ID: {r.roomId}, Type: {r.type}
+											<Button onClick={() => setRoomId(r.roomId)} size='sm'>
+												Select
+											</Button>
 										</Card.Header>
 										<Card.Body>
-											<Card.Title>{r.name}</Card.Title>
+											<Card.Text>
+												<p>{r.name}</p>
+											</Card.Text>
 										</Card.Body>
 									</Card>
 								))}

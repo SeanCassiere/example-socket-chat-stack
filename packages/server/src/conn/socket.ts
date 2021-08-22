@@ -28,8 +28,8 @@ interface Room {
 	name: string;
 }
 const globalRooms: Room[] = [
-	{ roomId: "qu02F3RW2", type: "single", name: "chat with bob1-bob2" },
-	{ roomId: "RD05TU9Lc", type: "group", name: "chat with group1" },
+	{ roomId: "qu02F3RW2", type: "single", name: "single chat with bob1 and bob2" },
+	{ roomId: "RD05TU9Lc", type: "group", name: "group chat with bob1, bob2 and bob3" },
 ];
 
 interface UserRoomConnection {
@@ -113,8 +113,13 @@ function socket({ io }: { io: Server }) {
 		 * on(client-sendMessageToRoom) => broadcast/emit message to room by id
 		 **/
 		socket.on(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, ({ roomId, message }) => {
-			const messageObject = { id: v4(), roomId, message };
-			socket.to(roomId).emit(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, messageObject);
+			const availableConns = globalUserRoomConnections.filter((conn) => {
+				if (conn.roomId === roomId && conn.userId === socket.handshake.auth.userId) conn;
+			});
+			if (availableConns && availableConns.length > 0) {
+				const messageObject = { id: v4(), roomId, message };
+				socket.to(roomId).emit(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, messageObject);
+			}
 		});
 
 		/**
