@@ -5,10 +5,12 @@ import {
 	initiateSocketConnection,
 	socketAddUserToRoom,
 	socketCreateNewRoom,
+	socketCreateNewRoomWithGuests,
 	socketGetAllConnectedRooms,
 	socketListenToRoomMessages,
 	socketRemoveUserFromRoom,
 	socketSendMessageToRoom,
+	TypeSocketCreateNewRoomWithGuests,
 } from "#root/shared/api/socket.service";
 import type {
 	TypeInitiateSocketConnection,
@@ -30,6 +32,7 @@ interface ISocketContext {
 	addUser: TypeSocketAddUserToRoom;
 	createRoom: TypeSocketCreateNewRoom;
 	removeUser: TypeSocketRemoveUserFromRoom;
+	createRoomWithGuests: TypeSocketCreateNewRoomWithGuests;
 }
 
 const initialValues: ISocketContext = {
@@ -41,6 +44,7 @@ const initialValues: ISocketContext = {
 	addUser: socketAddUserToRoom,
 	removeUser: socketRemoveUserFromRoom,
 	createRoom: socketCreateNewRoom,
+	createRoomWithGuests: socketCreateNewRoomWithGuests,
 };
 
 const SocketContext = createContext<ISocketContext>({

@@ -1,9 +1,16 @@
-import { selectAuthUserState, selectChatRoomsState } from "#root/shared/redux/store";
 import React, { useState } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 
+import { selectAuthUserState, selectChatRoomsState } from "#root/shared/redux/store";
 import { useSocket } from "#root/shared/context/Socket.context";
+
+const allUsers = [
+	{ id: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63", name: "bob1" },
+	{ id: "84104d83-087c-47e4-bc2f-a45185fbce7a", name: "bob2" },
+	{ id: "6e19c360-49ff-4030-99aa-0b148ad35c00", name: "bob3" },
+	{ id: "bc05efd5-f940-4e35-8c10-222b4fb22dfd", name: "bob4" },
+];
 
 export const ChatScreen = () => {
 	const {
@@ -12,7 +19,7 @@ export const ChatScreen = () => {
 	const { myRooms } = useSelector(selectChatRoomsState);
 
 	// Socket methods
-	const { sendMessage, createRoom, removeUser, addUser } = useSocket();
+	const { sendMessage, createRoom, removeUser, addUser, createRoomWithGuests } = useSocket();
 
 	const [roomId, setRoomId] = useState("");
 	const [chatContent, setChatContent] = useState("");
@@ -21,6 +28,7 @@ export const ChatScreen = () => {
 	const [roomType, setRoomType] = useState<"single" | "group">("single");
 
 	const [guestUserId, setGuestUserId] = useState("");
+	const [guestUsers, setGuestUsers] = useState<string[]>([]);
 
 	function handleSendMessageSubmit(e: React.SyntheticEvent) {
 		e.preventDefault();
@@ -31,6 +39,11 @@ export const ChatScreen = () => {
 	function handleCreateRoom(e: React.SyntheticEvent) {
 		e.preventDefault();
 		createRoom(roomName, roomType);
+	}
+
+	function handleCreateRoomWithGuests(e: React.SyntheticEvent) {
+		e.preventDefault();
+		createRoomWithGuests(roomName, roomType, guestUsers);
 	}
 
 	function handleJoinGuestToRoom(e: React.SyntheticEvent) {
@@ -48,7 +61,7 @@ export const ChatScreen = () => {
 			<Row>
 				<Col xs='6'>
 					<Row>
-						<Col>
+						<Col xs='12'>
 							<form className='h-100 p-2' onSubmit={handleCreateRoom}>
 								<h5>Create a Room</h5>
 								<input
@@ -156,6 +169,44 @@ export const ChatScreen = () => {
 									required
 								/>
 								<Button type='submit'>Send Message</Button>
+							</form>
+						</Col>
+					</Row>
+					<Row>
+						<Col>
+							<form className='h-100 p-2' onSubmit={handleCreateRoomWithGuests}>
+								<hr />
+								<h5>
+									Create a Room with Guests{" "}
+									<Button type='button' variant='danger' onClick={() => setGuestUsers([])}>
+										Clear selection
+									</Button>
+								</h5>
+								<p>Guests: {JSON.stringify(guestUsers)}</p>
+								<input
+									type='text'
+									value={roomName}
+									onChange={(e) => setRoomName(e.target.value)}
+									placeholder='Room Name'
+									required
+								/>
+								<Form.Select value={roomType} onChange={(e) => setRoomType(e.currentTarget.value as any)}>
+									<option value='single'>single</option>
+									<option value='group'>group</option>
+								</Form.Select>
+								<Form.Select multiple>
+									{allUsers.map((item) => (
+										<option
+											key={`option-${item.id}`}
+											disabled={authUserId === item.id}
+											onClick={() => setGuestUsers((g) => [...g, item.id])}
+										>
+											{item.name}
+										</option>
+									))}
+								</Form.Select>
+								<Button type='submit'>Create Room with guests</Button>
+								<hr />
 							</form>
 						</Col>
 					</Row>

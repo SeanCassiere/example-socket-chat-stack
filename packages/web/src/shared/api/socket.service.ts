@@ -14,6 +14,7 @@ const EVENTS = {
 		CREATE_A_ROOM: "CREATE_A_ROOM",
 		CLIENT_ADD_USER_TO_ROOM: "CLIENT_ADD_USER_TO_ROOM",
 		CLIENT_REMOVE_USER_FROM_ROOM: "CLIENT_REMOVE_USER_FROM_ROOM",
+		CLIENT_CREATE_ROOM_WITH_GUEST: "CLIENT_CREATE_ROOM_WITH_GUEST",
 	},
 	SERVER: {
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
@@ -96,3 +97,8 @@ export const socketRemoveUserFromRoom = (roomId: string, userId: string) => {
 	socket.emit(EVENTS.CLIENT.CLIENT_REMOVE_USER_FROM_ROOM, { roomId, userId });
 };
 export type TypeSocketRemoveUserFromRoom = typeof socketRemoveUserFromRoom;
+
+export const socketCreateNewRoomWithGuests = (name: string, type: "single" | "group", users: string[]) => {
+	socket.emit(EVENTS.CLIENT.CLIENT_CREATE_ROOM_WITH_GUEST, { name, type, guestIds: users });
+};
+export type TypeSocketCreateNewRoomWithGuests = typeof socketCreateNewRoomWithGuests;
