@@ -7,14 +7,13 @@ const EVENTS = {
 	disconnection: "disconnect",
 	connect_error: "connect_error",
 	CLIENT: {
-		JOIN_ROOM: "JOIN_ROOM",
-		TURN_USER_ONLINE: "TURN_USER_ONLINE",
-		GET_ONLINE_USERS: "GET_ONLINE_USERS",
+		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
+		CREATE_A_ROOM: "CREATE_A_ROOM",
 	},
 	SERVER: {
-		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
-		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
+		NEW_MESSAGE_FROM_USER: "NEW_MESSAGE_FROM_USER",
+		NEW_ROOM_YOU_ARE_SUBSCRIBED_TO: "NEW_ROOM_YOU_ARE_SUBSCRIBED_TO",
 	},
 };
 
@@ -43,4 +42,18 @@ export const socketGetAllConnectedRooms = () => {
 		console.log("Rooms you are subscribed to:");
 		console.log(rooms);
 	});
+};
+
+export const socketSendMessageToRoom = (roomId: string, message: string) => {
+	socket.emit(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, { roomId, message });
+};
+
+export const socketListenToRoomMessages = () => {
+	socket.on(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, (messageObject) => {
+		console.log(messageObject);
+	});
+};
+
+export const socketCreateNewRoom = ({ name, type }: { name: string; type: "single" | "group" }) => {
+	socket.emit(EVENTS.CLIENT.CREATE_A_ROOM, { name, type });
 };

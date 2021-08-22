@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-// import { v4 } from "uuid";
+import { v4 } from "uuid";
 
 import { log } from "#root/utils/logger";
 import { socketTokenAuth } from "#root/middleware/authMiddleware";
@@ -13,14 +13,12 @@ const EVENTS = {
 	disconnection: "disconnect",
 	connect_error: "connect_error",
 	CLIENT: {
-		JOIN_ROOM: "JOIN_ROOM",
-		TURN_USER_ONLINE: "TURN_USER_ONLINE",
-		GET_ONLINE_USERS: "GET_ONLINE_USERS",
+		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
+		CREATE_A_ROOM: "CREATE_A_ROOM",
 	},
 	SERVER: {
-		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
-		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
 		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
+		NEW_MESSAGE_FROM_USER: "NEW_MESSAGE_FROM_USER",
 	},
 };
 
@@ -43,7 +41,47 @@ const globalUserRoomConnections: UserRoomConnection[] = [
 	{ connectionId: "Ob3CfnLHs", roomId: "qu02F3RW2", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
 	{ connectionId: "irqRP_2Ts", roomId: "qu02F3RW2", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
 	{ connectionId: "Je-0XXsH2", roomId: "RD05TU9Lc", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
+	{ connectionId: "dDl6C6KYim9dQ", roomId: "RD05TU9Lc", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
+	{ connectionId: "HpziR7gZzdFQ", roomId: "RD05TU9Lc", userId: "6e19c360-49ff-4030-99aa-0b148ad35c00" },
 ];
+/**
+ * Single chat with each other:
+ * 	bob1 -> bob2
+ *
+ * Group Chat with each other
+ * bob1 -> bob2 -> bob3
+ *
+ * bob1 -> dc2500f5-f8a4-4924-a38c-9a9b1fe10d63
+ * bob2 -> 84104d83-087c-47e4-bc2f-a45185fbce7a
+ * bob3 -> 6e19c360-49ff-4030-99aa-0b148ad35c00
+ */
+
+function getUserConnections(allRooms: Room[], allConnections: UserRoomConnection[], userId: string) {
+	// The of rooms the user should join upon connection
+	let serverJoinUserToTheseRoomIds: string[];
+	serverJoinUserToTheseRoomIds = [];
+
+	// The list of available rooms we send back to the user
+	let returnRoomsListToUser: Room[];
+	returnRoomsListToUser = [];
+
+	/**
+	 * Sorting the rooms available to the user by searching by their connections
+	 * This is similar to a joined foreign key I guess, till we do the DB implementation with TypeORM
+	 *  */
+	const usersConns = allConnections.filter((conn) => conn.userId === userId);
+	usersConns.forEach((conn) => {
+		const roomMatchesUserId = allRooms.find((r: Room) => r.roomId === conn.roomId);
+		if (roomMatchesUserId) returnRoomsListToUser.push(roomMatchesUserId);
+	});
+
+	/**
+	 * Extracting the room ids from the connections
+	 */
+	serverJoinUserToTheseRoomIds = usersConns.map((conn) => conn.roomId);
+
+	return { returnRoomsListToUser, serverJoinUserToTheseRoomIds };
+}
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
@@ -51,20 +89,10 @@ function socket({ io }: { io: Server }) {
 	io.use(socketTokenAuth);
 
 	io.on(EVENTS.connection, (socket: Socket) => {
-		let userConns: UserRoomConnection[] | undefined;
-		userConns = undefined;
-
-		let userRoomsToJoin: string[] | undefined;
-		userRoomsToJoin = undefined;
-
-		let roomsToSendUser: Room[];
-		roomsToSendUser = [];
-
 		log.info(`User connected ${socket.id}, userId is ${socket.handshake.auth.userId}`);
-		/**
-		 * User disconnect cleanup
-		 */
+
 		socket.on(EVENTS.disconnection, async () => {
+			//User disconnect cleanup
 			log.info(`User ${socket.handshake.auth.userId} has disconnected`);
 		});
 
@@ -72,24 +100,58 @@ function socket({ io }: { io: Server }) {
 		 * @done
 		 * on(connection) => finding + joining user to existing rooms + emitting user's rooms back to user
 		 * */
-		userConns = globalUserRoomConnections.filter((conn) => conn.userId === socket.handshake.auth.userId);
-		userRoomsToJoin = userConns.map((conn) => conn.roomId);
-
-		userConns.forEach((conn) => {
-			const room = globalRooms.find((r: Room) => r.roomId === conn.roomId);
-			if (room) roomsToSendUser.push(room);
-		});
-		socket.join(userRoomsToJoin);
-		socket.emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, roomsToSendUser);
+		const { returnRoomsListToUser, serverJoinUserToTheseRoomIds } = getUserConnections(
+			globalRooms,
+			globalUserRoomConnections,
+			socket.handshake.auth.userId
+		);
+		socket.join(serverJoinUserToTheseRoomIds);
+		socket.emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
 
 		/**
-		 * @todo
+		 * @done
 		 * on(client-sendMessageToRoom) => broadcast/emit message to room by id
 		 **/
+		socket.on(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, ({ roomId, message }) => {
+			const messageObject = { id: v4(), roomId, message };
+			socket.to(roomId).emit(EVENTS.SERVER.NEW_MESSAGE_FROM_USER, messageObject);
+		});
+
+		/**
+		 * @done
+		 * on(createNewRoom) => create Room and join user to the room
+		 */
+		socket.on(EVENTS.CLIENT.CREATE_A_ROOM, ({ name, type }) => {
+			const newRoom: Room = { roomId: v4(), type, name };
+			globalRooms.push(newRoom); //Push to global rooms
+
+			const newConnection: UserRoomConnection = {
+				connectionId: v4(),
+				roomId: newRoom.roomId,
+				userId: socket.handshake.auth.userId,
+			};
+			globalUserRoomConnections.push(newConnection); // Push to global conns
+			log.warn(`New room created`);
+			log.warn(newRoom);
+			socket.join(newRoom.roomId);
+
+			const { returnRoomsListToUser } = getUserConnections(
+				globalRooms,
+				globalUserRoomConnections,
+				socket.handshake.auth.userId
+			);
+			// Return to use all their rooms
+			socket.emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, returnRoomsListToUser);
+		});
 
 		/**
 		 * @todo
-		 * on(createNewRoom) => create Room and join user to the room
+		 * on(client->entersRoom) => load previous messages
+		 */
+
+		/**
+		 * @todo
+		 * on (client-> add new user to room) create connection Object and emit to new user the room
 		 */
 	});
 }
