@@ -9,7 +9,7 @@ import { AppDispatch, selectAuthUserState } from "./shared/redux/store";
 import { userFetchRefreshedAccessTokenThunk } from "./shared/redux/thunks/authUser.thunks";
 import Loader from "./shared/components/Loader/Loader";
 
-import { disconnectSocket, initiateSocketConnection, socketGetAllOnlineUsers } from "./shared/api/socket.service";
+import { disconnectSocket, initiateSocketConnection, socketGetAllConnectedRooms } from "./shared/api/socket.service";
 
 const App = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -24,7 +24,7 @@ const App = () => {
 	useEffect(() => {
 		if (isLoggedIn && token && user && user.username) {
 			initiateSocketConnection(token);
-			socketGetAllOnlineUsers();
+			socketGetAllConnectedRooms();
 		}
 
 		return () => disconnectSocket();

@@ -14,6 +14,7 @@ const EVENTS = {
 	SERVER: {
 		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
 		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
+		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
 	},
 };
 
@@ -37,22 +38,9 @@ export const disconnectSocket = () => {
 	}
 };
 
-export const socketGetAllOnlineUsers = () => {
-	socket.emit(EVENTS.CLIENT.GET_ONLINE_USERS);
-
-	socket.on(EVENTS.SERVER.ALL_ONLINE_USERS, (users) => {
-		console.log(users);
-	});
-};
-
-export const socketPostShowCurrentUserOnline = (id: string) => {
-	socket.emit(EVENTS.CLIENT.TURN_USER_ONLINE, id);
-};
-
-export const joinRoom = () => {
-	socket.emit(EVENTS.CLIENT.JOIN_ROOM, "1");
-
-	socket.on(EVENTS.SERVER.BROADCAST_MESSAGE, (msg) => {
-		console.log(msg);
+export const socketGetAllConnectedRooms = () => {
+	socket.on(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, (rooms) => {
+		console.log("Rooms you are subscribed to:");
+		console.log(rooms);
 	});
 };

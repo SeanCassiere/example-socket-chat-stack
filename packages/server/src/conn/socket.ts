@@ -2,11 +2,7 @@ import { Server, Socket } from "socket.io";
 // import { v4 } from "uuid";
 
 import { log } from "#root/utils/logger";
-import { Secret, verify } from "jsonwebtoken";
-import { GeneratedTokenInterface } from "#root/interfaces/jwtTokenInterfaces";
-import environmentVariables from "#root/utils/env";
-
-const JWT_SECRET: Secret = environmentVariables.JWT_SECRET || "dev_jwt_secret";
+import { socketTokenAuth } from "#root/middleware/authMiddleware";
 
 /**
  *  imported from https://github1s.com/TomDoesTech/Realtime-Chat-Application/blob/HEAD/server/src/socket.ts#L1-L81
@@ -24,95 +20,77 @@ const EVENTS = {
 	SERVER: {
 		ALL_ONLINE_USERS: "ALL_ONLINE_USERS",
 		BROADCAST_MESSAGE: "BROADCAST_MESSAGE",
+		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
 	},
 };
 
-const users: string[] = [];
+interface Room {
+	roomId: string;
+	type: "single" | "group";
+	name: string;
+}
+const globalRooms: Room[] = [
+	{ roomId: "qu02F3RW2", type: "single", name: "chat with bob1-bob2" },
+	{ roomId: "RD05TU9Lc", type: "group", name: "chat with group1" },
+];
+
+interface UserRoomConnection {
+	connectionId: string;
+	roomId: string;
+	userId: string;
+}
+const globalUserRoomConnections: UserRoomConnection[] = [
+	{ connectionId: "Ob3CfnLHs", roomId: "qu02F3RW2", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
+	{ connectionId: "irqRP_2Ts", roomId: "qu02F3RW2", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
+	{ connectionId: "Je-0XXsH2", roomId: "RD05TU9Lc", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
+];
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
 
-	io.use((socket, next) => {
-		if (socket.handshake.auth.token) {
-			try {
-				const decoded = verify(socket.handshake.auth.token, JWT_SECRET) as GeneratedTokenInterface;
-				socket.handshake.auth.userId = decoded.userId;
-				next();
-			} catch (e) {
-				const err = new Error("not authorized") as any;
-				err.data = { content: "Please retry later" }; // additional details
-				next(err);
-			}
-		} else {
-			const err = new Error("not authorized") as any;
-			err.data = { content: "Please retry later" }; // additional details
-			next(err);
-		}
-	});
+	io.use(socketTokenAuth);
 
 	io.on(EVENTS.connection, (socket: Socket) => {
+		let userConns: UserRoomConnection[] | undefined;
+		userConns = undefined;
+
+		let userRoomsToJoin: string[] | undefined;
+		userRoomsToJoin = undefined;
+
+		let roomsToSendUser: Room[];
+		roomsToSendUser = [];
+
 		log.info(`User connected ${socket.id}, userId is ${socket.handshake.auth.userId}`);
 		/**
 		 * User disconnect cleanup
 		 */
 		socket.on(EVENTS.disconnection, async () => {
-			log.info("user disconnected");
+			log.info(`User ${socket.handshake.auth.userId} has disconnected`);
 		});
 
 		/**
-		 * Strategy to consider
-		 * @todo
-		 * implement a store with user ids and the rooms ids they are subscribed to.
-		 * use following:
-		 *	Room: {
-		 *		roomId: string,
-		 *		type: "single" | "group"
-		 *  }[]
-		 *
-		 * 	User: {
-		 * 		roomIds: Room[]
-		 *  }
+		 * @done
+		 * on(connection) => finding + joining user to existing rooms + emitting user's rooms back to user
 		 * */
+		userConns = globalUserRoomConnections.filter((conn) => conn.userId === socket.handshake.auth.userId);
+		userRoomsToJoin = userConns.map((conn) => conn.roomId);
+
+		userConns.forEach((conn) => {
+			const room = globalRooms.find((r: Room) => r.roomId === conn.roomId);
+			if (room) roomsToSendUser.push(room);
+		});
+		socket.join(userRoomsToJoin);
+		socket.emit(EVENTS.SERVER.ROOMS_YOU_ARE_SUBSCRIBED_TO, roomsToSendUser);
 
 		/**
 		 * @todo
-		 * on(connection) => connect socket (user) to pre existing rooms by ids
-		 * */
-
-		/**
-		 * @todo
-		 * on(sendMessageToRoom) => broadcast/emit message to room by id
+		 * on(client-sendMessageToRoom) => broadcast/emit message to room by id
 		 **/
 
 		/**
 		 * @todo
 		 * on(createNewRoom) => create Room and join user to the room
 		 */
-
-		/**
-		 * Get the online users
-		 */
-		socket.on(EVENTS.CLIENT.GET_ONLINE_USERS, () => {
-			log.info(`Getting online users for ${socket.id}`);
-			io.to(socket.id).emit(EVENTS.SERVER.ALL_ONLINE_USERS, users);
-		});
-
-		/**
-		 * Make user online
-		 */
-		socket.on(EVENTS.CLIENT.TURN_USER_ONLINE, (id) => {
-			log.info(`Turning user ${id} online for ${socket.id}`);
-			users.push(id);
-			io.emit(EVENTS.SERVER.ALL_ONLINE_USERS, users);
-		});
-
-		/**
-		 * User joins a room
-		 */
-		socket.on(EVENTS.CLIENT.JOIN_ROOM, (i) => {
-			log.info(`User joined the room: ${i}`);
-			io.emit(EVENTS.SERVER.BROADCAST_MESSAGE, `Server message from room: ${i}`);
-		});
 	});
 }
 
