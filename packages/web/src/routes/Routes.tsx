@@ -10,6 +10,7 @@ import RegisterScreen from "#root/modules/RegisterScreen/RegisterScreen";
 import ProfileScreen from "#root/modules/ProfileScreen/ProfileScreen";
 import LogoutScreen from "#root/modules/LogoutScreen/LogoutScreen";
 import ChatScreen from "#root/modules/ChatScreen/ChatScreen";
+import DevScreen from "#root/modules/DevScreen/DevScreen";
 
 const Routes = () => {
 	return (
@@ -34,6 +35,8 @@ const Routes = () => {
 					<Route path='/register' component={RegisterScreen} exact />
 					<AuthRoute path='/profile' component={ProfileScreen} exact />
 					<AuthRoute path='/chat' component={ChatScreen} exact />
+					<AuthRoute path='/chat/:id' component={ChatScreen} exact />
+					<AuthRoute path='/dev' component={DevScreen} exact />
 				</Switch>
 			</BrowserRouter>
 		</>

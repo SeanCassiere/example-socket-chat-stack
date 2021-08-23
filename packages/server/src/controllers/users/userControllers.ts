@@ -10,6 +10,21 @@ import { environmentVariables } from "#root/utils/env";
 
 import { User } from "#root/entities/User";
 
+export const publicGetAllUsers = asyncHandler(async (_, res, next) => {
+	const query = User.createQueryBuilder().select();
+
+	try {
+		const usersQuery = await query.getMany();
+		const users = usersQuery.map((u) => {
+			return { userId: u.userId, firstName: u.firstName, lastName: u.lastName, username: u.username };
+		});
+		res.json(users);
+	} catch (error) {
+		res.status(500);
+		next("Error with the database search");
+	}
+});
+
 // @desc Authenticate the login and get tokens
 // @route POST /api/users/login
 // @access Public

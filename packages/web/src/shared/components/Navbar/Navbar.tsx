@@ -33,6 +33,9 @@ export const NavbarItem = () => {
 								<Nav.Link as={Link} to='/chat'>
 									Chat
 								</Nav.Link>
+								<Nav.Link as={Link} to='/dev'>
+									Dev
+								</Nav.Link>
 								<Nav.Link as={Link} to='/logout'>
 									Logout
 								</Nav.Link>

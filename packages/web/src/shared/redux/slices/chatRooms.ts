@@ -1,3 +1,4 @@
+import { UserForApplication } from "#root/shared/interfaces/user/authUser";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Room {
@@ -8,12 +9,14 @@ interface Room {
 
 interface AllProcesses {
 	myRooms: Room[];
+	allUsers: UserForApplication[];
 }
 
 let roomsInitialState: AllProcesses;
 
 roomsInitialState = {
 	myRooms: [],
+	allUsers: [],
 };
 
 export const chatRoomsSlice = createSlice({
@@ -23,9 +26,12 @@ export const chatRoomsSlice = createSlice({
 		setMyChatRooms: (state, action: PayloadAction<Room[]>) => {
 			state.myRooms = action.payload;
 		},
+		setAllUsersForChat: (state, action: PayloadAction<UserForApplication[]>) => {
+			state.allUsers = action.payload;
+		},
 	},
 });
 
-export const { setMyChatRooms } = chatRoomsSlice.actions;
+export const { setMyChatRooms, setAllUsersForChat } = chatRoomsSlice.actions;
 
 export const chatRoomsReducer = chatRoomsSlice.reducer;
