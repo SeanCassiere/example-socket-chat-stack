@@ -4,142 +4,25 @@ import { v4 } from "uuid";
 import { log } from "#root/utils/logger";
 import { socketTokenAuth } from "#root/middleware/authMiddleware";
 
+import {
+	activeUsers,
+	addUserOnline,
+	EVENTS,
+	getOnlineUserSocketsList,
+	getUserConnections,
+	globalRooms,
+	globalUserRoomConnections,
+	isRoomAccessibleToUser,
+	isUserAlreadyInRoom,
+	removeUserOnline,
+	Room,
+	setGlobalUserConnections,
+	UserRoomConnection,
+} from "#root/utils/in-mem/db";
 /**
  *  imported from https://github1s.com/TomDoesTech/Realtime-Chat-Application/blob/HEAD/server/src/socket.ts#L1-L81
  * https://deepinder.me/creating-a-real-time-chat-application-with-react-hooks-socket-io-and-nodejs
  * */
-const EVENTS = {
-	connection: "connection",
-	disconnection: "disconnect",
-	connect_error: "connect_error",
-	CLIENT: {
-		SEND_MESSAGE_TO_ROOM: "SEND_MESSAGE_TO_ROOM",
-		CREATE_A_ROOM: "CREATE_A_ROOM",
-		CLIENT_ADD_USER_TO_ROOM: "CLIENT_ADD_USER_TO_ROOM",
-		CLIENT_REMOVE_USER_FROM_ROOM: "CLIENT_REMOVE_USER_FROM_ROOM",
-		CLIENT_CREATE_ROOM_WITH_GUEST: "CLIENT_CREATE_ROOM_WITH_GUEST",
-	},
-	SERVER: {
-		ROOMS_YOU_ARE_SUBSCRIBED_TO: "ROOMS_YOU_ARE_SUBSCRIBED_TO",
-		NEW_MESSAGE_FROM_USER: "NEW_MESSAGE_FROM_USER",
-	},
-};
-
-interface Room {
-	roomId: string;
-	type: "single" | "group";
-	name: string;
-}
-let globalRooms: Room[] = [
-	{ roomId: "qu02F3RW2", type: "single", name: "single chat with bob1 and bob2" },
-	{ roomId: "RD05TU9Lc", type: "group", name: "group chat with bob1, bob2 and bob3" },
-];
-
-interface UserRoomConnection {
-	connectionId: string;
-	roomId: string;
-	userId: string;
-}
-let globalUserRoomConnections: UserRoomConnection[] = [
-	{ connectionId: "Ob3CfnLHs", roomId: "qu02F3RW2", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
-	{ connectionId: "irqRP_2Ts", roomId: "qu02F3RW2", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
-	{ connectionId: "Je-0XXsH2", roomId: "RD05TU9Lc", userId: "dc2500f5-f8a4-4924-a38c-9a9b1fe10d63" },
-	{ connectionId: "dDl6C6KYim9dQ", roomId: "RD05TU9Lc", userId: "84104d83-087c-47e4-bc2f-a45185fbce7a" },
-	{ connectionId: "HpziR7gZzdFQ", roomId: "RD05TU9Lc", userId: "6e19c360-49ff-4030-99aa-0b148ad35c00" },
-];
-
-let activeUsers: Record<string, string[]> = {};
-type OnlineUsers = typeof activeUsers;
-function addUserOnline(socketId: string, userId: string) {
-	// If user not exist, add an empty key
-	if (!activeUsers[userId]) {
-		activeUsers = {
-			...activeUsers,
-			[userId]: [],
-		};
-	}
-
-	// add this socket to the user
-	activeUsers[userId].push(socketId);
-}
-
-function removeItemAll(arr: string[], value: string) {
-	let i: number = 0;
-	while (i < arr.length) {
-		if (arr[i] === value) {
-			arr.splice(i, 1);
-		} else {
-			++i;
-		}
-	}
-	return arr;
-}
-
-function removeUserOnline(socketId: string, userId: string) {
-	const availableUserSockets = activeUsers[userId];
-	const newSocketList = removeItemAll(availableUserSockets, socketId);
-	activeUsers = {
-		...activeUsers,
-		[userId]: newSocketList,
-	};
-}
-
-function getOnlineUserSocketsList(users: OnlineUsers, userId: string) {
-	if (users[userId]) return users[userId];
-	return [];
-}
-
-/**
- * Single chat with each other:
- * 	bob1 -> bob2
- *
- * Group Chat with each other
- * bob1 -> bob2 -> bob3
- *
- * bob1 -> dc2500f5-f8a4-4924-a38c-9a9b1fe10d63
- * bob2 -> 84104d83-087c-47e4-bc2f-a45185fbce7a
- * bob3 -> 6e19c360-49ff-4030-99aa-0b148ad35c00
- */
-
-function getUserConnections(allRooms: Room[], allConnections: UserRoomConnection[], userId: string) {
-	// The of rooms the user should join upon connection
-	let serverJoinUserToTheseRoomIds: string[];
-	serverJoinUserToTheseRoomIds = [];
-
-	// The list of available rooms we send back to the user
-	let returnRoomsListToUser: Room[];
-	returnRoomsListToUser = [];
-
-	/**
-	 * Sorting the rooms available to the user by searching by their connections
-	 * This is similar to a joined foreign key I guess, till we do the DB implementation with TypeORM
-	 *  */
-	const usersConns = allConnections.filter((conn) => conn.userId === userId);
-	usersConns.forEach((conn) => {
-		const roomMatchesUserId = allRooms.find((r: Room) => r.roomId === conn.roomId);
-		if (roomMatchesUserId) returnRoomsListToUser.push(roomMatchesUserId);
-	});
-
-	/**
-	 * Extracting the room ids from the connections
-	 */
-	serverJoinUserToTheseRoomIds = usersConns.map((conn) => conn.roomId);
-
-	return { returnRoomsListToUser, serverJoinUserToTheseRoomIds };
-}
-
-function isRoomAccessibleToUser(allConnections: UserRoomConnection[], roomId: string, userId: string) {
-	const availableConns = allConnections.filter((conn) => conn.roomId === roomId && conn.userId === userId);
-	if (availableConns && availableConns.length > 0) return true;
-	log.warn(`User ${userId} tried to access roomId ${roomId} in an unauthorized state`);
-	return false;
-}
-
-function isUserAlreadyInRoom(allConnections: UserRoomConnection[], roomId: string, userId: string) {
-	const res = allConnections.find((c) => c.roomId === roomId && c.userId === userId);
-	if (res) return true;
-	return false;
-}
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
@@ -310,7 +193,7 @@ function socket({ io }: { io: Server }) {
 					(conn) => conn.roomId === roomId && conn.userId === userId
 				);
 				const newConnList = globalUserRoomConnections.filter((conn) => conn !== findConnection[0]);
-				globalUserRoomConnections = newConnList;
+				setGlobalUserConnections(newConnList);
 				// console.log("Connections at removal", globalUserRoomConnections);
 
 				// Find and broadcast this new connection to the user by updating their rooms
