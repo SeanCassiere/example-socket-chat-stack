@@ -36,6 +36,41 @@
 	],
 	"paths": {
 		"/users": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Get all users",
+				"description": "Getting all the registered users.",
+				"operationId": "GetAllUsers",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "successfully got all users",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/UserForApplication"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/UnauthorizedError"
+					}
+				},
+				"x-codegen-request-body-name": "body",
+				"parameters": []
+			},
+
 			"post": {
 				"tags": ["Users"],
 				"summary": "Register a user",

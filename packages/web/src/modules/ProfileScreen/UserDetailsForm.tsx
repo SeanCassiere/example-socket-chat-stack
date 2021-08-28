@@ -13,7 +13,7 @@ const UserDetailsForm = () => {
 	const { loading, success, error, errorMsg } = useSelector(selectUpdateProfileProcess);
 
 	const {
-		user: { firstName, lastName, username },
+		user: { firstName, lastName, username, userId },
 	} = useSelector(selectAuthUserState);
 
 	const [form, setForm] = useState({
@@ -66,6 +66,12 @@ const UserDetailsForm = () => {
 
 			<Row className='justify-content-md-center align-items-md-center'>
 				<Col xs lg='6'>
+					<Form.Group className='mb-3' controlId='formBasicEmail'>
+						<FloatingLabel controlId='floatingUserId' label='User ID' className='mb-3'>
+							<Form.Control type='text' placeholder='User ID' value={userId as string} readOnly />
+						</FloatingLabel>
+					</Form.Group>
+
 					<Form onSubmit={handleSubmit}>
 						<Form.Group className='mb-3' controlId='formBasicEmail'>
 							<FloatingLabel controlId='floatingUsername' label='Username' className='mb-3'>

@@ -14,11 +14,15 @@ import {
 	refreshUserAccessTokenFromCookie,
 	logoutUser,
 	loginUser,
+	publicGetAllUsers,
 } from "#root/controllers/users/userControllers";
 
 const userRouter = Router();
 
-userRouter.route("/").post(expressYupMiddleware({ schemaValidator: registerUserValidator }), registerUser);
+userRouter
+	.route("/")
+	.get(protect, publicGetAllUsers)
+	.post(expressYupMiddleware({ schemaValidator: registerUserValidator }), registerUser);
 
 userRouter.route("/login").post(expressYupMiddleware({ schemaValidator: userLoginValidator }), loginUser);
 

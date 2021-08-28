@@ -1,12 +1,14 @@
 import { NextFunction, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { Secret, verify } from "jsonwebtoken";
+import { Socket } from "socket.io";
 
 import { GeneratedTokenInterface } from "#root/interfaces/jwtTokenInterfaces";
 import { CustomRequest } from "#root/interfaces/expressInterfaces";
 import { User } from "#root/entities/User";
 import { environmentVariables } from "#root/utils/env";
 import { refreshTokenCookieConst } from "#root/utils/constants/cookieConstants";
+import { ExtendedError } from "socket.io/dist/namespace";
 
 const JWT_SECRET: Secret = environmentVariables.JWT_SECRET || "dev_jwt_secret";
 const REFRESH_JWT_SECRET: Secret = environmentVariables.REFRESH_JWT_SECRET || "dev_refresh_jwt_secret";
@@ -65,3 +67,21 @@ export const isRefreshCookieValid = asyncHandler(async (req: CustomRequest<{}>, 
 		throw new Error("No refreshToken cookie set, request denied");
 	}
 });
+
+export const socketTokenAuth = async (socket: Socket, next: (err?: ExtendedError | undefined) => void) => {
+	if (socket.handshake.auth.token) {
+		try {
+			const decoded = verify(socket.handshake.auth.token, JWT_SECRET) as GeneratedTokenInterface;
+			socket.handshake.auth.userId = decoded.userId;
+			next();
+		} catch (e) {
+			const err = new Error("not authorized") as any;
+			err.data = { content: "Please retry later" }; // additional details
+			next(err);
+		}
+	} else {
+		const err = new Error("not authorized") as any;
+		err.data = { content: "Please retry later" }; // additional details
+		next(err);
+	}
+};

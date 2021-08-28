@@ -8,12 +8,12 @@ export class User extends BaseEntity {
 	@Column("text", { unique: true })
 	username: string;
 
-	@Column({ name: "first_name" })
+	@Column("varchar", { name: "first_name" })
 	firstName: string;
 
-	@Column({ name: "last_name" })
+	@Column("varchar", { name: "last_name" })
 	lastName: string;
 
-	@Column()
+	@Column("varchar")
 	password: string;
 }

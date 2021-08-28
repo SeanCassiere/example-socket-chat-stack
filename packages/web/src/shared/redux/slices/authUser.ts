@@ -2,16 +2,18 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { userFetchRefreshedAccessTokenThunk, userLoginThunk } from "../thunks/authUser.thunks";
 
+export interface UserSys {
+	userId: string | null;
+	username: string | null;
+	firstName: string | null;
+	lastName: string | null;
+}
+
 interface AuthUserSliceState {
 	token: string | null;
 	isLoggedIn: boolean;
 	isAuthenticating: boolean;
-	user: {
-		userId: string | null;
-		username: string | null;
-		firstName: string | null;
-		lastName: string | null;
-	};
+	user: UserSys;
 }
 
 let initialStateData: AuthUserSliceState;

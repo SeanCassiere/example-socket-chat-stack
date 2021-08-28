@@ -6,12 +6,12 @@ import { useSelector } from "react-redux";
 import { selectAuthUserState } from "#root/shared/redux/store";
 
 export const NavbarItem = () => {
-	const { isLoggedIn } = useSelector(selectAuthUserState);
+	const { isLoggedIn, user } = useSelector(selectAuthUserState);
 	return (
 		<div>
 			<Navbar bg='light' variant='light'>
 				<Container>
-					<Navbar.Brand as={Link} to={isLoggedIn ? "/dashboard" : "/"}>
+					<Navbar.Brand as={Link} to={isLoggedIn ? "/chat" : "/"}>
 						Navbar
 					</Navbar.Brand>
 					<Nav className='me-auto'>
@@ -28,7 +28,13 @@ export const NavbarItem = () => {
 						{isLoggedIn && (
 							<>
 								<Nav.Link as={Link} to='/profile'>
-									Profile
+									Profile - {user.username}
+								</Nav.Link>
+								<Nav.Link as={Link} to='/chat'>
+									Chat
+								</Nav.Link>
+								<Nav.Link as={Link} to='/dev'>
+									Dev
 								</Nav.Link>
 								<Nav.Link as={Link} to='/logout'>
 									Logout

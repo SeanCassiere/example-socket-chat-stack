@@ -1,78 +1,51 @@
 import { Server, Socket } from "socket.io";
-import { v4 } from "uuid";
 
 import { log } from "#root/utils/logger";
+import { socketTokenAuth } from "#root/middleware/authMiddleware";
 
-// imported from https://github1s.com/TomDoesTech/Realtime-Chat-Application/blob/HEAD/server/src/socket.ts#L1-L81
-const EVENTS = {
-	connection: "connection",
-	CLIENT: {
-		CREATE_ROOM: "CREATE_ROOM",
-		SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
-		JOIN_ROOM: "JOIN_ROOM",
-	},
-	SERVER: {
-		ROOMS: "ROOMS",
-		JOINED_ROOM: "JOINED_ROOM",
-		ROOM_MESSAGE: "ROOM_MESSAGE",
-	},
-};
-
-const rooms: Record<string, { name: string }> = {};
+import { addUserOnline, EVENTS, removeUserOnline } from "#root/utils/in-mem/db";
+import { createRoomWithOnlyClient } from "#root/controllers/sockets/createRoomWithOnlyClient";
+import { sendRoomsBackToLoginClient } from "#root/controllers/sockets/sendRoomsBackToLoginClient";
+import { clientSendsMessage } from "#root/controllers/sockets/clientSendsMessage";
+import { createRoomWithGuests } from "#root/controllers/sockets/createRoomGuests";
+import { addUserToRoom } from "#root/controllers/sockets/addUserToRoom";
+import { removeUserFromRoom } from "#root/controllers/sockets/removeUserFromRoom";
+/**
+ *  imported from https://github1s.com/TomDoesTech/Realtime-Chat-Application/blob/HEAD/server/src/socket.ts#L1-L81
+ * https://deepinder.me/creating-a-real-time-chat-application-with-react-hooks-socket-io-and-nodejs
+ * */
 
 function socket({ io }: { io: Server }) {
 	log.info(`Sockets enabled`);
 
+	io.use(socketTokenAuth);
+
 	io.on(EVENTS.connection, (socket: Socket) => {
-		log.info(`User connected ${socket.id}`);
+		log.info(`User connected ${socket.id}, userId is ${socket.handshake.auth.userId}`);
+		addUserOnline(socket.id, socket.handshake.auth.userId);
 
-		socket.emit(EVENTS.SERVER.ROOMS, rooms);
-
-		/*
-		 * When a user creates a new room
+		/**
+		 * On disconnection, remove the client from the active users list { [user]: sockets[]}
 		 */
-		socket.on(EVENTS.CLIENT.CREATE_ROOM, ({ roomName }) => {
-			console.log({ roomName });
-			// create a roomId
-			const roomId = v4();
-			// add a new room to the rooms object
-			rooms[roomId] = {
-				name: roomName,
-			};
-
-			socket.join(roomId);
-
-			// broadcast an event saying there is a new room
-			socket.broadcast.emit(EVENTS.SERVER.ROOMS, rooms);
-
-			// emit back to the room creator with all the rooms
-			socket.emit(EVENTS.SERVER.ROOMS, rooms);
-			// emit event back the room creator saying they have joined a room
-			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+		socket.on(EVENTS.disconnection, async () => {
+			removeUserOnline(socket.id, socket.handshake.auth.userId);
+			log.info(`User ${socket.handshake.auth.userId} has disconnected`);
 		});
 
-		/*
-		 * When a user sends a room message
+		/**
+		 * On connection, send the rooms back to the client
 		 */
+		sendRoomsBackToLoginClient(socket);
 
-		socket.on(EVENTS.CLIENT.SEND_ROOM_MESSAGE, ({ roomId, message, username }) => {
-			const date = new Date();
+		socket.on(EVENTS.CLIENT.SEND_MESSAGE_TO_ROOM, (args) => clientSendsMessage(socket, args));
 
-			socket.to(roomId).emit(EVENTS.SERVER.ROOM_MESSAGE, {
-				message,
-				username,
-				time: `${date.getHours()}:${date.getMinutes()}`,
-			});
-		});
+		socket.on(EVENTS.CLIENT.CREATE_A_ROOM, (args) => createRoomWithOnlyClient(socket, args));
 
-		/*
-		 * When a user joins a room
-		 */
-		socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId) => {
-			socket.join(roomId);
+		socket.on(EVENTS.CLIENT.CLIENT_CREATE_ROOM_WITH_GUEST, (args) => createRoomWithGuests(socket, args));
 
-			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
-		});
+		socket.on(EVENTS.CLIENT.CLIENT_ADD_USER_TO_ROOM, (args) => addUserToRoom(socket, args));
+
+		socket.on(EVENTS.CLIENT.CLIENT_REMOVE_USER_FROM_ROOM, (args) => removeUserFromRoom(socket, io, args));
 	});
 }
 
